@@ -1,14 +1,14 @@
-%global upstream_version -bf1
+%global upstream_version 3.d-bf1
 
 Name:           i3
-Version:        3.d
-Release:        bf1_1%{?dist}
+Version:        3.d.bf1
+Release:        1%{?dist}
 Summary:        Improved tiling window manager
 
 Group:          User Interface/Desktops
 License:        BSD
 URL:            http://i3.zekjur.net
-Source0:        http://i3.zekjur.net/downloads/%{name}-%{version}-bf1.tar.bz2
+Source0:        http://i3.zekjur.net/downloads/%{name}-%{upstream_version}.tar.bz2
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  xcb-util-devel
@@ -33,8 +33,19 @@ and has several measures to be very fast.
 Please be aware that i3 is primarily targeted at advanced users and developers.
 
 
+%package doc
+Summary:        Documentation for %{name}
+Group:          Documentation
+BuildRequires:  asciidoc
+Requires:       %{name} = %{version}-%{release}
+
+
+%description doc
+Asciidoc generated documentations for %{name}.
+
+
 %prep
-%setup -q -n %{name}-%{version}-bf1
+%setup -q -n %{name}-%{upstream_version}
 
 #####          I M P O R T A N T         #####
 ##### !!!! TO CHECK ON EVERY UPDATE !!!! #####
@@ -47,8 +58,8 @@ sed -e 's|CFLAGS += -Wunused|CFLAGS += -I/usr/include/libev|g' \
 
 
 %build
-export CFLAGS
 make %{?_smp_mflags}
+cd docs; make %{?_smp_mflags}
 
 
 %install
@@ -64,7 +75,7 @@ rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root,-)
-%doc GOALS LICENSE RELEASE-NOTES-%{version}-bf1
+%doc GOALS LICENSE RELEASE-NOTES-%{upstream_version}
 %{_bindir}/%{name}
 %{_bindir}/%{name}-input
 %{_bindir}/%{name}-msg
@@ -74,7 +85,16 @@ rm -rf %{buildroot}
 %{_datadir}/xsessions/%{name}.desktop
 
 
+%files doc
+%defattr(-,root,root,-)
+%doc docs/*.{html,png}
+
+
 %changelog
+* Fri Dec 25 2009 Simon Wesp <cassmodiah@fedoraproject.org> - 3.d.bf1-1
+- Correct version (https://www.redhat.com/archives/fedora-devel-list/2009-December/msg01102.html) Thank you Michael
+- Add more documentation (generated with asciidoc)
+
 * Fri Dec 25 2009 Simon Wesp <cassmodiah@fedoraproject.org> - 3.d-bf1_1
 - New upstream release
 
