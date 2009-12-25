@@ -1,12 +1,14 @@
+%global upstream_version -bf1
+
 Name:           i3
 Version:        3.d
-Release:        1%{?dist}
+Release:        bf1_1%{?dist}
 Summary:        Improved tiling window manager
 
 Group:          User Interface/Desktops
 License:        BSD
 URL:            http://i3.zekjur.net
-Source0:        http://i3.zekjur.net/downloads/%{name}-%{version}.tar.bz2
+Source0:        http://i3.zekjur.net/downloads/%{name}-%{version}-bf1.tar.bz2
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  xcb-util-devel
@@ -17,6 +19,7 @@ BuildRequires:  libxkbfile-devel
 BuildRequires:  libX11-devel
 BuildRequires:  bison
 BuildRequires:  flex
+Requires:       rxvt-unicode
 
 
 %description
@@ -31,7 +34,7 @@ Please be aware that i3 is primarily targeted at advanced users and developers.
 
 
 %prep
-%setup -q
+%setup -q -n %{name}-%{version}-bf1
 
 #####          I M P O R T A N T         #####
 ##### !!!! TO CHECK ON EVERY UPDATE !!!! #####
@@ -44,12 +47,15 @@ sed -e 's|CFLAGS += -Wunused|CFLAGS += -I/usr/include/libev|g' \
 
 
 %build
+export CFLAGS
 make %{?_smp_mflags}
 
 
 %install
 rm -rf %{buildroot}
-make install DESTDIR=%{buildroot} INSTALL="install -p"
+make install \
+     DESTDIR=%{buildroot} \
+     INSTALL="install -p"
 
 
 %clean
@@ -58,16 +64,19 @@ rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root,-)
-%doc GOALS LICENSE TODO
+%doc GOALS LICENSE RELEASE-NOTES-%{version}-bf1
 %{_bindir}/%{name}
 %{_bindir}/%{name}-input
 %{_bindir}/%{name}-msg
 %dir %{_sysconfdir}/%{name}/
 %config(noreplace) %{_sysconfdir}/%{name}/config
-%{_sysconfdir}/%{name}/welcome
+%config %{_sysconfdir}/%{name}/welcome
 %{_datadir}/xsessions/%{name}.desktop
 
 
 %changelog
+* Fri Dec 25 2009 Simon Wesp <cassmodiah@fedoraproject.org> - 3.d-bf1_1
+- New upstream release
+
 * Wed Dec 02 2009 Simon Wesp <cassmodiah@fedoraproject.org> - 3.d-1
 - Package build for Fedora
