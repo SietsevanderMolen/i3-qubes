@@ -2,13 +2,14 @@
 
 Name:           i3
 Version:        3.d.bf1
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Improved tiling window manager
 
 Group:          User Interface/Desktops
 License:        BSD
 URL:            http://i3.zekjur.net
 Source0:        http://i3.zekjur.net/downloads/%{name}-%{upstream_version}.tar.bz2
+Source1:        %{name}-logo.svg
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  xcb-util-devel
@@ -23,6 +24,7 @@ BuildRequires:  asciidoc
 Requires:       rxvt-unicode
 Requires:       xorg-x11-apps
 Requires:       dmenu
+Requires:       xorg-x11-fonts-misc
 
 
 %description
@@ -51,14 +53,10 @@ Asciidoc and doxygen generated documentations for %{name}.
 %prep
 %setup -q -n %{name}-%{upstream_version}
 
-#####          I M P O R T A N T         #####
-##### !!!! TO CHECK ON EVERY UPDATE !!!! #####
-# correct path of libev inclusion, honor optflags and clear double mention.
 sed -e 's|CFLAGS += -Wunused|CFLAGS += -I/usr/include/libev|g' \
     -e 's|CFLAGS += -Wall|CFLAGS += %{optflags}|g' \
     -e 's|CFLAGS += -pipe|CFLAGS += |g' \
     -i common.mk
-##############################################
 
 
 %build
@@ -69,7 +67,7 @@ cd ../docs; make %{?_smp_mflags}
 
 cd ..
 doxygen pseudo-doc.doxygen
-mv pseudo-doc/html pseudo-doc/doxygen 
+mv pseudo-doc/html pseudo-doc/doxygen
 
 
 %install
@@ -82,6 +80,10 @@ make install \
 mkdir -p %{buildroot}/%{_mandir}/man1/
 install -Dpm0644 man/*.1 \
         %{buildroot}/%{_mandir}/man1/
+
+mkdir -p %{buildroot}/%{_datadir}/pixmaps/
+install -Dpm0644 %{SOURCE1} \
+        %{buildroot}/%{_datadir}/pixmaps/
 
 
 %clean
@@ -97,6 +99,7 @@ rm -rf %{buildroot}
 %config %{_sysconfdir}/%{name}/welcome
 %{_datadir}/xsessions/%{name}.desktop
 %{_mandir}/man1/%{name}*
+%{_datadir}/pixmaps/%{name}-logo.svg
 
 
 %files doc
@@ -105,6 +108,10 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Wed Jan 06 2010 Simon Wesp <cassmodiah@fedoraproject.org> - 3.d.bf1-3
+- Add Missing R: xorg-x11-fonts-misc
+- Add i3-logo as SOURCE1 and install it to DATADIR/pixmaps
+
 * Sun Dec 27 2009 Simon Wesp <cassmodiah@fedoraproject.org> - 3.d.bf1-2
 - Add missing Requires for a functional minimal (not comfortable) i3-system. (The requirements provides functions which are used in the standard configfile)
 - Build manpages and add them to main-pkg
