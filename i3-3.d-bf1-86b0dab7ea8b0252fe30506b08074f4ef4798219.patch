@@ -1,0 +1,24 @@
+From 86b0dab7ea8b0252fe30506b08074f4ef4798219 Mon Sep 17 00:00:00 2001
+From: Michael Stapelberg <michael@stapelberg.de>
+Date: Thu, 07 Jan 2010 12:36:52 +0100
+Subject: Bugfix: Use ev_loop_new instead of ev_default_loop because the latter one blocks SIGCHLD (Thanks Ciprian)
+
+SIGCHLD was inherited to child processes started by i3 and not
+all of them unblocked it (shells generally did, though), leading to
+zombie processes.
+---
+diff --git a/src/mainx.c b/src/mainx.c
+index d847d6f..d82ecae 100644
+--- i3-3.d-bf1.orig/src/mainx.c
++++ i3-3.d-bf1/src/mainx.c
+@@ -266,7 +266,7 @@ int main(int argc, char *argv[], char *env[]) {
+         }
+ 
+         /* Initialize event loop using libev */
+-        struct ev_loop *loop = ev_default_loop(0);
++        struct ev_loop *loop = ev_loop_new(0);
+         if (loop == NULL)
+                 die("Could not initialize libev. Bad LIBEV_FLAGS?\n");
+ 
+--
+cgit v0.8.3

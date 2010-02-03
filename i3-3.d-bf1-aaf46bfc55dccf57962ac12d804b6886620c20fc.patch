@@ -1,0 +1,23 @@
+From aaf46bfc55dccf57962ac12d804b6886620c20fc Mon Sep 17 00:00:00 2001
+From: Michael Stapelberg <michael@stapelberg.de>
+Date: Fri, 08 Jan 2010 17:56:01 +0100
+Subject: bugfix: lexer: return to INITIAL state (Thanks dirkson)
+
+'floating_modifier' after 'workspace' did not work because of wrong
+state
+---
+diff --git a/src/cfgparse.l b/src/cfgparse.l
+index 6e4a867..1b636f1 100644
+--- i3-3.d-bf1.orig/src/cfgparse.l
++++ bi3-3.d-bf1/src/cfgparse.l
+@@ -33,7 +33,7 @@
+ mode                            { return TOKMODE; }
+ bind                            { BEGIN(BIND_COND); return TOKBIND; }
+ bindsym                         { BEGIN(BINDSYM_COND); return TOKBINDSYM; }
+-floating_modifier               { return TOKFLOATING_MODIFIER; }
++floating_modifier               { BEGIN(INITIAL); return TOKFLOATING_MODIFIER; }
+ workspace                       { BEGIN(INITIAL); return TOKWORKSPACE; }
+ screen                          { BEGIN(SCREEN_COND); return TOKSCREEN; }
+ terminal                        { BEGIN(BIND_AWS_COND); return TOKTERMINAL; }
+--
+cgit v0.8.3
