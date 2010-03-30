@@ -1,19 +1,11 @@
-%global upstream_version 3.d-bf1
-%global git 20100320git
-%global gitversion bbea32f
-
 Name:           i3
-Version:        3.d.bf1
-Release:        4.%{git}%{?dist}
+Version:        3.e
+Release:        1%{?dist}
 Summary:        Improved tiling window manager
 Group:          User Interface/Desktops
 License:        BSD
 URL:            http://i3.zekjur.net
-#Source0:        http://i3.zekjur.net/downloads/%{name}-%{upstream_version}.tar.bz2
-# git clone git://code.stapelberg.de/%{name}
-# cd %{name} && git reset --hard %{gitversion} && rm -rf .git .gitingore && cd ..
-# tar -czvf {name}-%{upstream_version}-%{git}.tar.bz2 %{name}
-Source0:        %{name}-%{upstream_version}-%{git}.tar.bz2
+Source0:        http://i3.zekjur.net/downloads/%{name}-%{version}.tar.bz2
 Source1:        %{name}-logo.svg
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -23,6 +15,7 @@ BuildRequires:  xcb-proto
 BuildRequires:  libev-devel
 BuildRequires:  libxkbfile-devel
 BuildRequires:  libX11-devel
+BuildRequires:  yajl-devel
 BuildRequires:  bison
 BuildRequires:  flex
 BuildRequires:  asciidoc
@@ -56,17 +49,24 @@ Asciidoc and doxygen generated documentations for %{name}.
 
 
 %prep
-%setup -q -n %{name}
+%setup -q
 
 sed \
-    -e 's|GIT_VERSION:=$(shell git describe --tags --always)|GIT_VERSION:=%{version}-%{git}|g' \
-    -e 's|VERSION:=$(shell git describe --tags --abbrev=0)|VERSION=%{version}-%{git}|g' \
-    -e 's|CFLAGS += -Wunused|CFLAGS += -I/usr/include/libev|g' \
     -e 's|CFLAGS += -Wall|CFLAGS += %{optflags}|g' \
-    -e 's|CFLAGS += -pipe|CFLAGS += |g' \
-    -e 's|CFLAGS += -I/usr/local/include|CFLAGS += -I/usr/include|g' \
+    -e 's|CFLAGS += -pipe|CFLAGS += -I/usr/include/libev |g' \
+    -e 's|CFLAGS += -I/usr/local/include|CFLAGS += -I%{_includedir}|g' \
+    -e 's|/usr/local/lib|%{_libdir}|g' \
     -e 's|.SILENT:||g' \
     -i common.mk
+
+cat << \EOF > %{name}-req
+#!/bin/sh
+%{__perl_requires} $* |\
+sed -e '/perl(AnyEvent::I3)/d'
+EOF
+
+%global __perl_requires %{_builddir}/%{name}-%{version}/%{name}-req
+chmod +x %{__perl_requires}
 
 
 %build
@@ -102,8 +102,9 @@ rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root,-)
-%doc GOALS LICENSE RELEASE-NOTES-%{upstream_version}
+%doc GOALS LICENSE RELEASE-NOTES-%{version}
 %{_bindir}/%{name}*
+%{_includedir}/%{name}/*
 %dir %{_sysconfdir}/%{name}/
 %config(noreplace) %{_sysconfdir}/%{name}/config
 %config(noreplace) %{_sysconfdir}/%{name}/welcome
@@ -118,6 +119,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Mar 30 2010 Simon Wesp <cassmodiah@fedoraproject.org> - 3.e-1
+- New upstream release
+
 * Sat Mar 20 2010 Simon Wesp <cassmodiah@fedoraproject.org> - 3.d.bf1-4.20100320git
 - Update to current git
 
