@@ -1,12 +1,15 @@
+%define ipc-version 0.1.3
+
 Name:           i3
 Version:        3.e
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Improved tiling window manager
 Group:          User Interface/Desktops
 License:        BSD
 URL:            http://i3.zekjur.net
 Source0:        http://i3.zekjur.net/downloads/%{name}-%{version}.tar.bz2
 Source1:        %{name}-logo.svg
+
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  xcb-util-devel
@@ -23,15 +26,14 @@ Requires:       rxvt-unicode
 Requires:       xorg-x11-apps
 Requires:       dmenu
 Requires:       xorg-x11-fonts-misc
+Requires:       dzen2
 
 
 %description
-Key features of i3 are correct implementation of Xinerama (workspaces are 
-assigned to virtual screens, i3 does the right thing when attaching new 
-monitors), XrandR support (not done yet), horizontal and vertical columns 
-(think of a table) in tiling. Also, special focus is on writing clean, readable 
-and well documented code. i3 uses xcb for asynchronous communication with X11, 
-and has several measures to be very fast.
+Key features of i3 are correct implementation of XrandR, horizontal and vertical
+columns (think of a table) in tiling. Also, special focus is on writing clean, 
+readable and well documented code. i3 uses xcb for asynchronous communication
+with X11, and has several measures to be very fast.
 
 Please be aware that i3 is primarily targeted at advanced users and developers.
 
@@ -58,15 +60,6 @@ sed \
     -e 's|/usr/local/lib|%{_libdir}|g' \
     -e 's|.SILENT:||g' \
     -i common.mk
-
-cat << \EOF > %{name}-req
-#!/bin/sh
-%{__perl_requires} $* |\
-sed -e '/perl(AnyEvent::I3)/d'
-EOF
-
-%global __perl_requires %{_builddir}/%{name}-%{version}/%{name}-req
-chmod +x %{__perl_requires}
 
 
 %build
@@ -95,7 +88,6 @@ mkdir -p %{buildroot}/%{_datadir}/pixmaps/
 install -Dpm0644 %{SOURCE1} \
         %{buildroot}/%{_datadir}/pixmaps/
 
-
 %clean
 rm -rf %{buildroot}
 
@@ -119,6 +111,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Apr 16 2010 Simon Wesp <cassmodiah@fedoraproject.org> - 3.e-2
+- Rebuild
+
 * Tue Mar 30 2010 Simon Wesp <cassmodiah@fedoraproject.org> - 3.e-1
 - New upstream release
 
