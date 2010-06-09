@@ -1,13 +1,14 @@
-%define ipc-version 0.1.3
-
+%global ipc-version 0.1.3
+%global upstream_version 3.e-bf1
+ 
 Name:           i3
 Version:        3.e
-Release:        2%{?dist}
+Release:        3.bf1%{?dist}
 Summary:        Improved tiling window manager
 Group:          User Interface/Desktops
 License:        BSD
 URL:            http://i3.zekjur.net
-Source0:        http://i3.zekjur.net/downloads/%{name}-%{version}.tar.bz2
+Source0:        http://i3.zekjur.net/downloads/%{name}-%{upstream_version}.tar.bz2
 Source1:        %{name}-logo.svg
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -51,7 +52,7 @@ Asciidoc and doxygen generated documentations for %{name}.
 
 
 %prep
-%setup -q
+%setup -q -n %{name}-%{upstream_version}
 
 sed \
     -e 's|CFLAGS += -Wall|CFLAGS += %{optflags}|g' \
@@ -94,7 +95,7 @@ rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root,-)
-%doc GOALS LICENSE RELEASE-NOTES-%{version}
+%doc GOALS LICENSE RELEASE-NOTES-%{upstream_version}
 %{_bindir}/%{name}*
 %{_includedir}/%{name}/*
 %dir %{_sysconfdir}/%{name}/
@@ -111,6 +112,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Wed Jun 09 2010 Simon Wesp <cassmodiah@fedoraproject.org> - 3.e-3.bf1
+- New upstream release (3.e-bf1)
+
 * Fri Apr 16 2010 Simon Wesp <cassmodiah@fedoraproject.org> - 3.e-2
 - Rebuild
 
