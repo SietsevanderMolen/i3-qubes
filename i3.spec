@@ -3,7 +3,7 @@
  
 Name:           i3
 Version:        3.e
-Release:        3.bf1%{?dist}
+Release:        4.bf1%{?dist}
 Summary:        Improved tiling window manager
 Group:          User Interface/Desktops
 License:        BSD
@@ -112,6 +112,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Jan 11 2011 Simon Wesp <cassmodiah@fedoraproject.org> - 3.e-4.bf1
+- rebuild against newest libev
+
 * Wed Jun 09 2010 Simon Wesp <cassmodiah@fedoraproject.org> - 3.e-3.bf1
 - New upstream release (3.e-bf1)
 
