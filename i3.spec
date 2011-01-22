@@ -1,9 +1,9 @@
 %global ipc-version 0.1.3
-%global upstream_version 3.e-bf1
+%global upstream_version 3.e-bf2
  
 Name:           i3
 Version:        3.e
-Release:        4.bf1%{?dist}
+Release:        5.bf2%{?dist}
 Summary:        Improved tiling window manager
 Group:          User Interface/Desktops
 License:        BSD
@@ -112,6 +112,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Sat Jan 19 2011 Simon Wesp <cassmodiah@fedoraproject.org> - 3.e-5.bf2
+- New upstream release
+
 * Tue Jan 11 2011 Simon Wesp <cassmodiah@fedoraproject.org> - 3.e-4.bf1
 - rebuild against newest libev
 
