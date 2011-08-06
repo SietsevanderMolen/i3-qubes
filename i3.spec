@@ -1,15 +1,13 @@
-%global ipc-version 0.1.3
-%global upstream_version 3.e-bf2
- 
 Name:           i3
-Version:        3.e
-Release:        6.bf2%{?dist}
+Version:        4.0.1
+Release:        1%{?dist}
 Summary:        Improved tiling window manager
 Group:          User Interface/Desktops
 License:        BSD
-URL:            http://i3.zekjur.net
-Source0:        http://i3.zekjur.net/downloads/%{name}-%{upstream_version}.tar.bz2
+URL:            http://i3wm.org
+Source0:        http://i3wm.org/downloads/%{name}-%{version}.tar.bz2
 Source1:        %{name}-logo.svg
+Source2:        fedora-%{name}-%{version}-common.mk
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -18,11 +16,13 @@ BuildRequires:  libxcb-devel
 BuildRequires:  xcb-proto
 BuildRequires:  libev-devel
 BuildRequires:  libxkbfile-devel
+BuildRequires:  libXcursor-devel
 BuildRequires:  libX11-devel
 BuildRequires:  yajl-devel
 BuildRequires:  bison
 BuildRequires:  flex
 BuildRequires:  asciidoc
+
 Requires:       rxvt-unicode
 Requires:       xorg-x11-apps
 Requires:       dmenu
@@ -52,15 +52,20 @@ Asciidoc and doxygen generated documentations for %{name}.
 
 
 %prep
-%setup -q -n %{name}-%{upstream_version}
+%setup -q
+
+cp %{SOURCE2} %{_builddir}/%{name}-%{version}/
 
 sed \
-    -e 's|CFLAGS += -Wall|CFLAGS += %{optflags}|g' \
-    -e 's|CFLAGS += -pipe|CFLAGS += -I/usr/include/libev |g' \
-    -e 's|CFLAGS += -I/usr/local/include|CFLAGS += -I%{_includedir}|g' \
-    -e 's|/usr/local/lib|%{_libdir}|g' \
-    -e 's|.SILENT:||g' \
-    -i common.mk
+    -e 's|include $(TOPDIR)/common.mk|include $(TOPDIR)/fedora-%{name}-%{version}-common.mk|g' \
+    -i Makefile
+
+sed \
+    -e 's|PUTINOPTFLAGSHERE|%{optflags}|g' \
+    -e 's|PUTININCLUDEDIRHERE|%{_includedir}|g' \
+    -e 's|PUTINPREFIXHERE|%{_prefix}|g' \
+    -e 's|PUTINSYSCONFDIRHERE|%{_sysconfdir}|g' \
+    -i fedora-%{name}-%{version}-common.mk
 
 
 %build
@@ -95,12 +100,13 @@ rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root,-)
-%doc GOALS LICENSE RELEASE-NOTES-%{upstream_version}
+%doc GOALS LICENSE RELEASE-NOTES-%{version}
 %{_bindir}/%{name}*
 %{_includedir}/%{name}/*
 %dir %{_sysconfdir}/%{name}/
 %config(noreplace) %{_sysconfdir}/%{name}/config
 %config(noreplace) %{_sysconfdir}/%{name}/welcome
+%config(noreplace) %{_sysconfdir}/%{name}/config.keycodes
 %{_datadir}/xsessions/%{name}.desktop
 %{_mandir}/man*/%{name}*
 %{_datadir}/pixmaps/%{name}-logo.svg
@@ -112,6 +118,12 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Aug 01 2011 Simon Wesp <cassmodiah@fedoraproject.org> - 4.0.1-1
+- New upstream release
+
+* Sun Jul 31 2011 Simon Wesp <cassmodiah@fedoraproject.org> -4.0-1
+- New upstream release
+
 * Wed Feb 09 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.e-6.bf2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
