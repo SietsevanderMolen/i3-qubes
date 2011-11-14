@@ -1,6 +1,6 @@
 Name:           i3
 Version:        4.0.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Improved tiling window manager
 Group:          User Interface/Desktops
 License:        BSD
@@ -8,8 +8,6 @@ URL:            http://i3wm.org
 Source0:        http://i3wm.org/downloads/%{name}-%{version}.tar.bz2
 Source1:        %{name}-logo.svg
 Source2:        fedora-%{name}-%{version}-common.mk
-
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  xcb-util-devel
 BuildRequires:  libxcb-devel
@@ -80,8 +78,6 @@ mv pseudo-doc/html pseudo-doc/doxygen
 
 
 %install
-rm -rf %{buildroot}
-
 make install \
      DESTDIR=%{buildroot} \
      INSTALL="install -p"
@@ -93,9 +89,6 @@ install -Dpm0644 man/*.1 \
 mkdir -p %{buildroot}/%{_datadir}/pixmaps/
 install -Dpm0644 %{SOURCE1} \
         %{buildroot}/%{_datadir}/pixmaps/
-
-%clean
-rm -rf %{buildroot}
 
 
 %files
@@ -118,6 +111,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Nov 14 2011 Peter Robinson <pbrobinson@fedoraproject.org> - 4.0.1-2
+- Rebuild for libyajl soname bump
+
 * Mon Aug 01 2011 Simon Wesp <cassmodiah@fedoraproject.org> - 4.0.1-1
 - New upstream release
 
