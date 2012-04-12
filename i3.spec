@@ -1,6 +1,6 @@
 Name:           i3
-Version:        4.0.1
-Release:        3%{?dist}
+Version:        4.1.2
+Release:        1%{?dist}
 Summary:        Improved tiling window manager
 Group:          User Interface/Desktops
 License:        BSD
@@ -9,6 +9,8 @@ Source0:        http://i3wm.org/downloads/%{name}-%{version}.tar.bz2
 Source1:        %{name}-logo.svg
 Source2:        fedora-%{name}-%{version}-common.mk
 
+BuildRequires:	xcb-util-keysyms-devel
+BuildRequires:	xcb-util-wm-devel
 BuildRequires:  xcb-util-devel
 BuildRequires:  libxcb-devel
 BuildRequires:  xcb-proto
@@ -16,7 +18,9 @@ BuildRequires:  libev-devel
 BuildRequires:  libxkbfile-devel
 BuildRequires:  libXcursor-devel
 BuildRequires:  libX11-devel
+BuildRequires:	startup-notification-devel
 BuildRequires:  yajl-devel
+BuildRequires:	pcre-devel
 BuildRequires:  bison
 BuildRequires:  flex
 BuildRequires:  asciidoc
@@ -92,7 +96,6 @@ install -Dpm0644 %{SOURCE1} \
 
 
 %files
-%defattr(-,root,root,-)
 %doc GOALS LICENSE RELEASE-NOTES-%{version}
 %{_bindir}/%{name}*
 %{_includedir}/%{name}/*
@@ -106,11 +109,13 @@ install -Dpm0644 %{SOURCE1} \
 
 
 %files doc
-%defattr(-,root,root,-)
 %doc docs/*.{html,png} pseudo-doc/doxygen/
 
 
 %changelog
+* Mon Mar 26 2012 Tom Callaway <spot@fedoraproject.org> - 4.1.2-1
+- update to 4.1.2
+
 * Fri Jan 13 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.0.1-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
