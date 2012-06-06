@@ -1,5 +1,5 @@
 Name:           i3
-Version:        4.1.2
+Version:        4.2
 Release:        1%{?dist}
 Summary:        Improved tiling window manager
 Group:          User Interface/Desktops
@@ -24,6 +24,8 @@ BuildRequires:	pcre-devel
 BuildRequires:  bison
 BuildRequires:  flex
 BuildRequires:  asciidoc
+BuildRequires:  perl-Data-Dumper-Names
+BuildRequires:  xmlto
 
 Requires:       rxvt-unicode
 Requires:       xorg-x11-apps
@@ -106,13 +108,16 @@ install -Dpm0644 %{SOURCE1} \
 %{_datadir}/xsessions/%{name}.desktop
 %{_mandir}/man*/%{name}*
 %{_datadir}/pixmaps/%{name}-logo.svg
-
+%{_datadir}/applications/%{name}.desktop
 
 %files doc
 %doc docs/*.{html,png} pseudo-doc/doxygen/
 
 
 %changelog
+* Wed Jun 06 2012 Martin Preisler <mpreisle@redhat.com> - 4.2-1
+- update to 4.2
+
 * Mon Mar 26 2012 Tom Callaway <spot@fedoraproject.org> - 4.1.2-1
 - update to 4.1.2
 
