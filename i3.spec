@@ -1,6 +1,6 @@
 Name:           i3
 Version:        4.2
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Improved tiling window manager
 Group:          User Interface/Desktops
 License:        BSD
@@ -115,6 +115,9 @@ install -Dpm0644 %{SOURCE1} \
 
 
 %changelog
+* Thu Jul 19 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.2-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
 * Wed Jun 06 2012 Martin Preisler <mpreisle@redhat.com> - 4.2-1
 - update to 4.2
 
