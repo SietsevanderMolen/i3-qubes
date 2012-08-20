@@ -1,6 +1,6 @@
 Name:           i3
 Version:        4.2
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Improved tiling window manager
 Group:          User Interface/Desktops
 License:        BSD
@@ -115,6 +115,9 @@ install -Dpm0644 %{SOURCE1} \
 
 
 %changelog
+* Mon Aug 20 2012 Adam Jackson <ajax@redhat.com> 4.2-3
+- Rebuild for new xcb-util soname
+
 * Thu Jul 19 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.2-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
