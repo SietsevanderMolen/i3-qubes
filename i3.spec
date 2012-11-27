@@ -1,6 +1,6 @@
 Name:           i3
-Version:        4.2
-Release:        3%{?dist}
+Version:        4.3
+Release:        1%{?dist}
 Summary:        Improved tiling window manager
 Group:          User Interface/Desktops
 License:        BSD
@@ -9,29 +9,31 @@ Source0:        http://i3wm.org/downloads/%{name}-%{version}.tar.bz2
 Source1:        %{name}-logo.svg
 Source2:        fedora-%{name}-%{version}-common.mk
 
-BuildRequires:	xcb-util-keysyms-devel
-BuildRequires:	xcb-util-wm-devel
-BuildRequires:  xcb-util-devel
 BuildRequires:  libxcb-devel
+BuildRequires:  xcb-util-keysyms-devel
+BuildRequires:  xcb-util-wm-devel
+BuildRequires:  xcb-util-devel
 BuildRequires:  xcb-proto
 BuildRequires:  libev-devel
-BuildRequires:  libxkbfile-devel
+BuildRequires:  flex
+BuildRequires:  bison
+BuildRequires:  yajl-devel
+BuildRequires:  asciidoc
+BuildRequires:  xmlto
 BuildRequires:  libXcursor-devel
 BuildRequires:  libX11-devel
-BuildRequires:	startup-notification-devel
-BuildRequires:  yajl-devel
-BuildRequires:	pcre-devel
-BuildRequires:  bison
-BuildRequires:  flex
-BuildRequires:  asciidoc
+BuildRequires:  pcre-devel
+BuildRequires:  startup-notification-devel
+BuildRequires:  libxkbfile-devel
 BuildRequires:  perl-Data-Dumper-Names
-BuildRequires:  xmlto
+BuildRequires:  pango-devel
 
 Requires:       rxvt-unicode
 Requires:       xorg-x11-apps
 Requires:       dmenu
 Requires:       xorg-x11-fonts-misc
 Requires:       dzen2
+Requires:       pango
 
 
 %description
@@ -98,12 +100,11 @@ install -Dpm0644 %{SOURCE1} \
 
 
 %files
-%doc GOALS LICENSE RELEASE-NOTES-%{version}
+%doc LICENSE RELEASE-NOTES-%{version}
 %{_bindir}/%{name}*
 %{_includedir}/%{name}/*
 %dir %{_sysconfdir}/%{name}/
 %config(noreplace) %{_sysconfdir}/%{name}/config
-%config(noreplace) %{_sysconfdir}/%{name}/welcome
 %config(noreplace) %{_sysconfdir}/%{name}/config.keycodes
 %{_datadir}/xsessions/%{name}.desktop
 %{_mandir}/man*/%{name}*
@@ -115,6 +116,10 @@ install -Dpm0644 %{SOURCE1} \
 
 
 %changelog
+* Wed Oct 31 2012 Felix Wiedemann <felix.wiedemann@online.de> - 4.3-1
+- update to 4.3
+- enabled support for pango
+
 * Mon Aug 20 2012 Adam Jackson <ajax@redhat.com> 4.2-3
 - Rebuild for new xcb-util soname
 
