@@ -1,5 +1,5 @@
 Name:           i3
-Version:        4.3
+Version:        4.4
 Release:        1%{?dist}
 Summary:        Improved tiling window manager
 Group:          User Interface/Desktops
@@ -116,6 +116,9 @@ install -Dpm0644 %{SOURCE1} \
 
 
 %changelog
+* Thu Jan 17 2013 Martin Preisler <mpreisle@redhat.com> - 4.4-1
+- update to 4.4
+
 * Wed Oct 31 2012 Felix Wiedemann <felix.wiedemann@online.de> - 4.3-1
 - update to 4.3
 - enabled support for pango
