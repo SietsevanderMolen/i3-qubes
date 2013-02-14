@@ -1,6 +1,6 @@
 Name:           i3
 Version:        4.4
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Improved tiling window manager
 Group:          User Interface/Desktops
 License:        BSD
@@ -116,6 +116,9 @@ install -Dpm0644 %{SOURCE1} \
 
 
 %changelog
+* Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.4-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
 * Thu Jan 17 2013 Martin Preisler <mpreisle@redhat.com> - 4.4-1
 - update to 4.4
 
