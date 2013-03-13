@@ -38,7 +38,9 @@ endif
 LDFLAGS ?= $(as_needed_LDFLAG)
 
 # Common CFLAGS for all i3 related binaries
-I3_CFLAGS  = -std=c99
+# Fedora changes begin
+I3_CFLAGS  = PUTINOPTFLAGSHERE -std=c99
+# Fedora changes end
 I3_CFLAGS += -Wall
 # unused-function, unused-label, unused-variable are turned on by -Wall
 # We don’t want unused-parameter because of the use of many callbacks
@@ -71,6 +73,7 @@ endif
 # for gnome-config was enabled but gnome-config is not actually installed.
 cflags_for_lib = $(shell pkg-config --silence-errors --cflags $(1) 2>/dev/null)
 ldflags_for_lib = $(shell pkg-config --exists 2>/dev/null $(1) && pkg-config --libs $(1) 2>/dev/null || echo -l$(2))
+
 
 # XCB common stuff
 XCB_CFLAGS  := $(call cflags_for_lib, xcb)

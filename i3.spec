@@ -1,6 +1,6 @@
 Name:           i3
-Version:        4.4
-Release:        2%{?dist}
+Version:        4.5
+Release:        1%{?dist}
 Summary:        Improved tiling window manager
 Group:          User Interface/Desktops
 License:        BSD
@@ -68,7 +68,6 @@ sed \
 
 sed \
     -e 's|PUTINOPTFLAGSHERE|%{optflags}|g' \
-    -e 's|PUTININCLUDEDIRHERE|%{_includedir}|g' \
     -e 's|PUTINPREFIXHERE|%{_prefix}|g' \
     -e 's|PUTINSYSCONFDIRHERE|%{_sysconfdir}|g' \
     -i fedora-%{name}-%{version}-common.mk
@@ -116,6 +115,9 @@ install -Dpm0644 %{SOURCE1} \
 
 
 %changelog
+* Tue Mar 12 2013 Simon Wesp <cassmodiah@fedoraproject.org> - 4.5-1
+- New upstream release
+
 * Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.4-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
 
