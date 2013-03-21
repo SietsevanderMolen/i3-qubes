@@ -1,5 +1,5 @@
 Name:           i3
-Version:        4.5
+Version:        4.5.1
 Release:        1%{?dist}
 Summary:        Improved tiling window manager
 Group:          User Interface/Desktops
@@ -115,6 +115,9 @@ install -Dpm0644 %{SOURCE1} \
 
 
 %changelog
+* Thu Mar 21 2013 Simon Wesp <cassmodiah@fedoraproject.org> - 4.5.1-1
+- New upstream release
+
 * Tue Mar 12 2013 Simon Wesp <cassmodiah@fedoraproject.org> - 4.5-1
 - New upstream release
 

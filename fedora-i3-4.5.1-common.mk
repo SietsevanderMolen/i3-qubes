@@ -74,7 +74,6 @@ endif
 cflags_for_lib = $(shell pkg-config --silence-errors --cflags $(1) 2>/dev/null)
 ldflags_for_lib = $(shell pkg-config --exists 2>/dev/null $(1) && pkg-config --libs $(1) 2>/dev/null || echo -l$(2))
 
-
 # XCB common stuff
 XCB_CFLAGS  := $(call cflags_for_lib, xcb)
 XCB_CFLAGS  += $(call cflags_for_lib, xcb-event)
