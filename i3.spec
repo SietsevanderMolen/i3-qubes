@@ -1,6 +1,6 @@
 Name:           i3
-Version:        4.5.1
-Release:        3%{?dist}
+Version:        4.6
+Release:        1%{?dist}
 Summary:        Improved tiling window manager
 Group:          User Interface/Desktops
 License:        BSD
@@ -115,6 +115,9 @@ install -Dpm0644 %{SOURCE1} \
 
 
 %changelog
+* Thu Aug 08 2013 Simon Wesp <cassmodiah@fedoraproject.org> - 4.6-1
+- New upstream release
+
 * Sat Aug 03 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.5.1-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
 
