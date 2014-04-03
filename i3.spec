@@ -1,5 +1,5 @@
 Name:           i3
-Version:        4.6
+Version:        4.7.2
 Release:        1%{?dist}
 Summary:        Improved tiling window manager
 Group:          User Interface/Desktops
@@ -12,6 +12,7 @@ Source2:        fedora-%{name}-%{version}-common.mk
 BuildRequires:  libxcb-devel
 BuildRequires:  xcb-util-keysyms-devel
 BuildRequires:  xcb-util-wm-devel
+BuildRequires:  xcb-util-cursor-devel
 BuildRequires:  xcb-util-devel
 BuildRequires:  xcb-proto
 BuildRequires:  libev-devel
@@ -106,6 +107,7 @@ install -Dpm0644 %{SOURCE1} \
 %config(noreplace) %{_sysconfdir}/%{name}/config
 %config(noreplace) %{_sysconfdir}/%{name}/config.keycodes
 %{_datadir}/xsessions/%{name}.desktop
+%{_datadir}/xsessions/%{name}-with-shmlog.desktop
 %{_mandir}/man*/%{name}*
 %{_datadir}/pixmaps/%{name}-logo.svg
 %{_datadir}/applications/%{name}.desktop
@@ -115,6 +117,9 @@ install -Dpm0644 %{SOURCE1} \
 
 
 %changelog
+* Thu Apr 03 2014 Martin Preisler <mpreisle@redhat.com> - 4.7.2-1
+- New upstream release
+
 * Thu Aug 08 2013 Simon Wesp <cassmodiah@fedoraproject.org> - 4.6-1
 - New upstream release
 
