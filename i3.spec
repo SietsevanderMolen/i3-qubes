@@ -1,6 +1,6 @@
 Name:           i3
 Version:        4.7.2
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Improved tiling window manager
 Group:          User Interface/Desktops
 License:        BSD
@@ -117,6 +117,9 @@ install -Dpm0644 %{SOURCE1} \
 
 
 %changelog
+* Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.7.2-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
 * Thu Apr 03 2014 Martin Preisler <mpreisle@redhat.com> - 4.7.2-1
 - New upstream release
 
