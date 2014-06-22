@@ -1,41 +1,56 @@
 Name:           i3
-Version:        4.7.2
-Release:        2%{?dist}
+Version:        4.8
+Release:        1%{?dist}
 Summary:        Improved tiling window manager
-Group:          User Interface/Desktops
 License:        BSD
 URL:            http://i3wm.org
 Source0:        http://i3wm.org/downloads/%{name}-%{version}.tar.bz2
 Source1:        %{name}-logo.svg
-Source2:        fedora-%{name}-%{version}-common.mk
-
+BuildRequires:  asciidoc
+BuildRequires:  bison
+BuildRequires:  flex
+BuildRequires:  libev-devel
+BuildRequires:  libX11-devel
 BuildRequires:  libxcb-devel
-BuildRequires:  xcb-util-keysyms-devel
-BuildRequires:  xcb-util-wm-devel
+BuildRequires:  libXcursor-devel
+BuildRequires:  libxkbfile-devel
+BuildRequires:  pango-devel
+BuildRequires:  pcre-devel
+# Testsuites
+#BuildRequires:  perl(strict)
+#BuildRequires:  perl(warnings)
+#BuildRequires:  perl(Pod::Usage)
+#BuildRequires:  perl(Cwd)
+#BuildRequires:  perl(File::Temp)
+#BuildRequires:  perl(Getopt::Long)
+#BuildRequires:  perl(POSIX)
+#BuildRequires:  perl(TAP::Harness)
+#BuildRequires:  perl(TAP::Parser)
+#BuildRequires:  perl(TAP::Parser::Aggregator)
+#BuildRequires:  perl(Time::HiRes)
+#BuildRequires:  perl(IO::Handle)
+#BuildRequires:  perl(AnyEvent::Util)
+#BuildRequires:  perl(AnyEvent::Handle)
+#BuildRequires:  perl(AnyEvent::I3)
+#BuildRequires:  perl(X11::XCB::Connection)
+#BuildRequires:  perl(Carp)
+BuildRequires:  perl(Data::Dumper::Names)
+BuildRequires:  startup-notification-devel
+BuildRequires:  xcb-proto
 BuildRequires:  xcb-util-cursor-devel
 BuildRequires:  xcb-util-devel
-BuildRequires:  xcb-proto
-BuildRequires:  libev-devel
-BuildRequires:  flex
-BuildRequires:  bison
-BuildRequires:  yajl-devel
-BuildRequires:  asciidoc
+BuildRequires:  xcb-util-keysyms-devel
+BuildRequires:  xcb-util-wm-devel
 BuildRequires:  xmlto
-BuildRequires:  libXcursor-devel
-BuildRequires:  libX11-devel
-BuildRequires:  pcre-devel
-BuildRequires:  startup-notification-devel
-BuildRequires:  libxkbfile-devel
-BuildRequires:  perl-Data-Dumper-Names
-BuildRequires:  pango-devel
-
-Requires:       rxvt-unicode
-Requires:       xorg-x11-apps
+BuildRequires:  xorg-x11-drv-dummy
+BuildRequires:  yajl-devel
 Requires:       dmenu
-Requires:       xorg-x11-fonts-misc
 Requires:       dzen2
 Requires:       pango
-
+Requires:       perl(:MODULE_COMPAT_%(eval "`perl -V:version`"; echo $version))
+Requires:       rxvt-unicode
+Requires:       xorg-x11-apps
+Requires:       xorg-x11-fonts-misc
 
 %description
 Key features of i3 are correct implementation of XrandR, horizontal and vertical
@@ -45,64 +60,49 @@ with X11, and has several measures to be very fast.
 
 Please be aware that i3 is primarily targeted at advanced users and developers.
 
-
-%package doc
+%package        doc
 Summary:        Documentation for %{name}
-Group:          Documentation
 BuildRequires:  doxygen
 BuildArch:      noarch
 Requires:       %{name} = %{version}-%{release}
 
-
 %description doc
 Asciidoc and doxygen generated documentations for %{name}.
-
 
 %prep
 %setup -q
 
-cp %{SOURCE2} %{_builddir}/%{name}-%{version}/
-
-sed \
-    -e 's|include $(TOPDIR)/common.mk|include $(TOPDIR)/fedora-%{name}-%{version}-common.mk|g' \
-    -i Makefile
-
-sed \
-    -e 's|PUTINOPTFLAGSHERE|%{optflags}|g' \
-    -e 's|PUTINPREFIXHERE|%{_prefix}|g' \
-    -e 's|PUTINSYSCONFDIRHERE|%{_sysconfdir}|g' \
-    -i fedora-%{name}-%{version}-common.mk
-
+sed -i -e 's|LDFLAGS ?=|override LDFLAGS +=|g' \
+       -e 's|CFLAGS ?=|override CFLAGS +=|g' \
+       -e 's|INSTALL=.*|INSTALL=install -p|g' \
+       common.mk
 
 %build
-make %{?_smp_mflags} V=1
+make CFLAGS="%{optflags}" LDFLAGS="%{?__global_ldflags}" %{?_smp_mflags} V=1
+make -C man %{?_smp_mflags} V=1
+make -C docs %{?_smp_mflags} V=1
 
-cd man; make %{?_smp_mflags} V=1
-cd ../docs; make %{?_smp_mflags} V=1
-
-cd ..
 doxygen pseudo-doc.doxygen
 mv pseudo-doc/html pseudo-doc/doxygen
 
-
 %install
-make install \
-     DESTDIR=%{buildroot} \
-     INSTALL="install -p"
+%make_install
 
-mkdir -p %{buildroot}/%{_mandir}/man1/
+mkdir -p %{buildroot}%{_mandir}/man1/
 install -Dpm0644 man/*.1 \
-        %{buildroot}/%{_mandir}/man1/
+        %{buildroot}%{_mandir}/man1/
 
-mkdir -p %{buildroot}/%{_datadir}/pixmaps/
+mkdir -p %{buildroot}%{_datadir}/pixmaps/
 install -Dpm0644 %{SOURCE1} \
-        %{buildroot}/%{_datadir}/pixmaps/
+        %{buildroot}%{_datadir}/pixmaps/
 
+%check
+#cd testcases/ && ./complete-run.pl -p 1
 
 %files
 %doc LICENSE RELEASE-NOTES-%{version}
 %{_bindir}/%{name}*
-%{_includedir}/%{name}/*
+%{_includedir}/%{name}/
 %dir %{_sysconfdir}/%{name}/
 %config(noreplace) %{_sysconfdir}/%{name}/config
 %config(noreplace) %{_sysconfdir}/%{name}/config.keycodes
@@ -115,8 +115,10 @@ install -Dpm0644 %{SOURCE1} \
 %files doc
 %doc docs/*.{html,png} pseudo-doc/doxygen/
 
-
 %changelog
+* Sat Jun 21 2014 Christopher Meng <rpm@cicku.me> - 4.8-1
+- Update to 4.8
+
 * Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.7.2-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
 
