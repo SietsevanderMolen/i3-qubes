@@ -16,7 +16,7 @@ BuildRequires:  libXcursor-devel
 BuildRequires:  libxkbfile-devel
 BuildRequires:  pango-devel
 BuildRequires:  pcre-devel
-# Testsuites
+# TODO: Testsuites
 #BuildRequires:  perl(strict)
 #BuildRequires:  perl(warnings)
 #BuildRequires:  perl(Pod::Usage)
@@ -72,6 +72,8 @@ Asciidoc and doxygen generated documentations for %{name}.
 %prep
 %setup -q
 
+# TODO: Drop all /usr/bin/env lines.
+# TODO: Drop old dwarf 2 option in CFLAGS.
 sed -i -e 's|LDFLAGS ?=|override LDFLAGS +=|g' \
        -e 's|CFLAGS ?=|override CFLAGS +=|g' \
        -e 's|INSTALL=.*|INSTALL=install -p|g' \
@@ -97,6 +99,7 @@ install -Dpm0644 %{SOURCE1} \
         %{buildroot}%{_datadir}/pixmaps/
 
 %check
+# TODO: with xorg dummy to test the package.
 #cd testcases/ && ./complete-run.pl -p 1
 
 %files
