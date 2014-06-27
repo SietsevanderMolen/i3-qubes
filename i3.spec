@@ -1,11 +1,12 @@
 Name:           i3
 Version:        4.8
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Improved tiling window manager
 License:        BSD
 URL:            http://i3wm.org
 Source0:        http://i3wm.org/downloads/%{name}-%{version}.tar.bz2
 Source1:        %{name}-logo.svg
+Patch0:         1d100d6e168d13752e79918f2410ccc7c492d700.patch
 BuildRequires:  asciidoc
 BuildRequires:  bison
 BuildRequires:  flex
@@ -71,6 +72,7 @@ Asciidoc and doxygen generated documentations for %{name}.
 
 %prep
 %setup -q
+%patch0 -p1
 
 # TODO: Drop all /usr/bin/env lines.
 # TODO: Drop old dwarf 2 option in CFLAGS.
@@ -119,6 +121,9 @@ install -Dpm0644 %{SOURCE1} \
 %doc docs/*.{html,png} pseudo-doc/doxygen/
 
 %changelog
+* Wed Jun 25 2014 Christopher Meng <rpm@cicku.me> - 4.8-2
+- Bugfix: don't focus unmapped container on manage(regression)
+
 * Sat Jun 21 2014 Christopher Meng <rpm@cicku.me> - 4.8-1
 - Update to 4.8
 
