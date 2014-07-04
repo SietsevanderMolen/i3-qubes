@@ -1,6 +1,6 @@
 Name:           i3
 Version:        4.8
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Improved tiling window manager
 License:        BSD
 URL:            http://i3wm.org
@@ -43,7 +43,9 @@ BuildRequires:  xcb-util-devel
 BuildRequires:  xcb-util-keysyms-devel
 BuildRequires:  xcb-util-wm-devel
 BuildRequires:  xmlto
+%ifnarch s390 s390x
 BuildRequires:  xorg-x11-drv-dummy
+%endif
 BuildRequires:  yajl-devel
 Requires:       dmenu
 Requires:       dzen2
@@ -101,8 +103,10 @@ install -Dpm0644 %{SOURCE1} \
         %{buildroot}%{_datadir}/pixmaps/
 
 %check
+%ifnarch s390 s390x
 # TODO: with xorg dummy to test the package.
 #cd testcases/ && ./complete-run.pl -p 1
+%endif
 
 %files
 %doc LICENSE RELEASE-NOTES-%{version}
@@ -121,6 +125,9 @@ install -Dpm0644 %{SOURCE1} \
 %doc docs/*.{html,png} pseudo-doc/doxygen/
 
 %changelog
+* Fri Jul 04 2014 Dan Horák <dan[at]danny.cz> - 4.8-3
+- no xorg-x11-drv-* on s390(x)
+
 * Wed Jun 25 2014 Christopher Meng <rpm@cicku.me> - 4.8-2
 - Bugfix: don't focus unmapped container on manage(regression)
 
