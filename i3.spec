@@ -7,6 +7,7 @@ URL:            http://i3wm.org
 Source0:        http://i3wm.org/downloads/%{name}-%{version}.tar.bz2
 Source1:        %{name}-logo.svg
 Patch0:         1d100d6e168d13752e79918f2410ccc7c492d700.patch
+Patch1:         i3-4.8.3-f20-qubes.patch
 BuildRequires:  asciidoc
 BuildRequires:  bison
 BuildRequires:  flex
@@ -50,7 +51,10 @@ BuildRequires:  yajl-devel
 Requires:       dmenu
 Requires:       dzen2
 Requires:       pango
-Requires:       perl(:MODULE_COMPAT_%(eval "`perl -V:version`"; echo $version))
+# we're building in a different vm, so we can't rely on the perl version
+# 5.18.4 should be available to fc20
+#Requires:       perl(:MODULE_COMPAT_%(eval "`perl -V:version`"; echo $version))
+Requires:       perl(:MODULE_COMPAT_5.18.4)
 Requires:       rxvt-unicode
 Requires:       xorg-x11-apps
 Requires:       xorg-x11-fonts-misc
@@ -75,6 +79,7 @@ Asciidoc and doxygen generated documentations for %{name}.
 %prep
 %setup -q
 %patch0 -p1
+%patch1 -p1
 
 # TODO: Drop all /usr/bin/env lines.
 # TODO: Drop old dwarf 2 option in CFLAGS.
