@@ -1,0 +1,36 @@
+From 7850a05061e22c171e39b2d159bd4f906912d0da Mon Sep 17 00:00:00 2001
+From: Michael Stapelberg <michael@stapelberg.de>
+Date: Thu, 24 Jul 2014 10:09:53 +0200
+Subject: [PATCH 2/3] Bugfix: add a sync call to i3bar to confirm reparents
+ before exiting
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Without this call, sometimes the tray icon windows are reparented into
+i3’s container around the i3bar window, i.e. into the next remaining
+window in the window hierarchy. Since i3 then closes that container
+(since the i3bar window itself was closed), the tray window will also
+get closed. In general, this weird interaction (getting reparented and
+then closed) is not well received by tray icon providers :).
+
+closes: #1296
+---
+ i3bar/src/xcb.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/i3bar/src/xcb.c b/i3bar/src/xcb.c
+index a29f909..2d33919 100644
+--- a/i3bar/src/xcb.c
++++ b/i3bar/src/xcb.c
+@@ -1290,6 +1290,7 @@ void clean_xcb(void) {
+     FREE(outputs);
+ 
+     xcb_flush(xcb_connection);
++    xcb_aux_sync(xcb_connection);
+     xcb_disconnect(xcb_connection);
+ 
+     ev_check_stop(main_loop, xcb_chk);
+-- 
+2.5.5
+

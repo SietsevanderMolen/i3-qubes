@@ -1,0 +1,135 @@
+From f804d889944f772bad093e055eadd01b8f9daafe Mon Sep 17 00:00:00 2001
+From: o <o@immerda.ch>
+Date: Sat, 2 Apr 2016 21:46:45 +0200
+Subject: [PATCH 3/3] For the client in focus have a lighter frame color
+
+---
+ src/x.c | 101 ++++++++++++++++++++++++++++++++++++++++++----------------------
+ 1 file changed, 66 insertions(+), 35 deletions(-)
+
+diff --git a/src/x.c b/src/x.c
+index 89a0eff..538c598 100644
+--- a/src/x.c
++++ b/src/x.c
+@@ -342,12 +342,76 @@ void x_draw_decoration(Con *con) {
+     if (con->urgent)
+         p->color = &config.client.urgent;
+     // else if (con == focused || con_inside_focused(con))
+-        // p->color = &config.client.focused;
++    //    p->color = &config.client.focused;
+     // else if (con == TAILQ_FIRST(&(parent->focus_head)))
+-        // p->color = &config.client.focused_inactive;
++    //    p->color = &config.client.focused_inactive;
+     else
+         p->color = &config.client.unfocused;
+ 
++    struct Window *win = con->window;
++    if (win != NULL) {
++        bool in_focus = con == focused || con_inside_focused(con);
++        if (in_focus) p->color = &config.client.focused;
++
++        DLOG("con->qubes_label is %d\n", win->qubes_label);
++        if (win->qubes_label == 0) { // dom0
++            p->color->text = get_colorpixel("#ffffff");
++            if (in_focus)
++                p->color->background = get_colorpixel("#474747");
++            else
++                p->color->background = get_colorpixel("#303030");
++        } else if (win->qubes_label == 1) { // red
++            p->color->text = get_colorpixel("#000000");
++            if (in_focus)
++                p->color->background = get_colorpixel("#ff0000");
++            else
++                p->color->background = get_colorpixel("#ba0000");
++        } else if (win->qubes_label == 2) { // orange
++            p->color->text = get_colorpixel("#0059FF");
++            if (in_focus)
++                p->color->background = get_colorpixel("#ffa500");
++            else
++                p->color->background = get_colorpixel("#b87700");
++        } else if (win->qubes_label == 3) { // yellow
++            p->color->text = get_colorpixel("#000000");
++            if (in_focus)
++                p->color->background = get_colorpixel("#ffff00");
++            else
++                p->color->background = get_colorpixel("#baba00");
++        } else if (win->qubes_label == 4) { // green
++            p->color->text = get_colorpixel("#ffffff");
++            if (in_focus)
++                p->color->background = get_colorpixel("#347235");
++            else
++                p->color->background = get_colorpixel("#214822");
++        } else if (win->qubes_label == 5) { // gray
++            p->color->text = get_colorpixel("#ffffff");
++            if (in_focus)
++                p->color->background = get_colorpixel("#777775");
++            else
++                p->color->background = get_colorpixel("#5d5d5b");
++        } else if (win->qubes_label == 6) { // blue
++            p->color->text = get_colorpixel("#000000");
++            if (in_focus)
++                p->color->background = get_colorpixel("#1e5ef3");
++            else
++                p->color->background = get_colorpixel("#133b98");
++        } else if (win->qubes_label == 7) { // purple
++            p->color->text = get_colorpixel("#ffffff");
++            if (in_focus)
++                p->color->background = get_colorpixel("#9a219b");
++            else
++                p->color->background = get_colorpixel("#621562");
++        } else if (win->qubes_label == 8) { // black
++            p->color->text = get_colorpixel("#ffffff");
++            if (in_focus)
++                p->color->background = get_colorpixel("#2f2f2f");
++            else
++                p->color->background = get_colorpixel("#000000");
++        }
++    }
++
++
+     p->border_style = con_border_style(con);
+ 
+     Rect *r = &(con->rect);
+@@ -407,39 +471,6 @@ void x_draw_decoration(Con *con) {
+         xcb_poly_fill_rectangle(conn, con->pixmap, con->pm_gc, sizeof(background) / sizeof(xcb_rectangle_t), background);
+     }
+ 
+-    struct Window *win = con->window;
+-    if (win != NULL) {
+-        DLOG("con->qubes_label is %d\n", win->qubes_label);
+-        if (win->qubes_label == 0) { // dom0
+-            p->color->background = get_colorpixel("#000000");
+-            p->color->text = get_colorpixel("#ffffff");
+-        } else if (win->qubes_label == 1) { // red
+-            p->color->background = get_colorpixel("#ff0000");
+-            p->color->text = get_colorpixel("#000000");
+-        } else if (win->qubes_label == 2) { // orange
+-            p->color->background = get_colorpixel("#FFA500");
+-            p->color->text = get_colorpixel("#0059FF");
+-        } else if (win->qubes_label == 3) { // yellow
+-            p->color->background = get_colorpixel("#ffff00");
+-            p->color->text = get_colorpixel("#000000");
+-        } else if (win->qubes_label == 4) { // green
+-            p->color->background = get_colorpixel("#347235");
+-            p->color->text = get_colorpixel("#ffffff");
+-        } else if (win->qubes_label == 5) { // gray
+-            p->color->background = get_colorpixel("#848482");
+-            p->color->text = get_colorpixel("#ffffff");
+-        } else if (win->qubes_label == 6) { // blue
+-            p->color->background = get_colorpixel("#2B65EC");
+-            p->color->text = get_colorpixel("#000000");
+-        } else if (win->qubes_label == 7) { // purple
+-            p->color->background = get_colorpixel("#7D1B7E");
+-            p->color->text = get_colorpixel("#ffffff");
+-        } else if (win->qubes_label == 8) { // black
+-            p->color->background = get_colorpixel("#000000");
+-            p->color->text = get_colorpixel("#ffffff");
+-        }
+-    }
+-
+     /* 3: draw a rectangle in border color around the client */
+     if (p->border_style != BS_NONE && p->con_is_leaf) {
+         /* We might hide some borders adjacent to the screen-edge */
+-- 
+2.5.5
+
