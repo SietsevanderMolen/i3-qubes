@@ -35,3 +35,8 @@ user@Dom0$ sudo yum localinstall i3-4.8-3.f20.x86_64.rpm
 ```
 
 Log out, log in again and configure to your needs!
+
+## Contributors
+https://github.com/SietsevanderMolen
+
+https://github.com/o-
