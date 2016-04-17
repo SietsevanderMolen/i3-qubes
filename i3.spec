@@ -6,10 +6,9 @@ License:        BSD
 URL:            http://i3wm.org
 Source0:        http://i3wm.org/downloads/%{name}-%{version}.tar.bz2
 Source1:        %{name}-logo.svg
-Patch0:		1d100d6e168d13752e79918f2410ccc7c492d700.patch
-Patch1:		i3-4.8.3-f20-qubes.patch
-Patch2:		0002-Bugfix-add-a-sync-call-to-i3bar-to-confirm-reparents.patch
-Patch3:		0003-For-the-client-in-focus-have-a-lighter-frame-color.patch
+Patch0:         0001-Show-qubes-domain-in-non-optional-colored-borders.patch
+Patch1:         0002-Bugfix-add-a-sync-call-to-i3bar-to-confirm-reparents.patch
+Patch2:         0003-Dont-focus-unmapped-container-on-manage.patch
 BuildRequires:  asciidoc
 BuildRequires:  bison
 BuildRequires:  flex
@@ -63,7 +62,7 @@ Requires:       xorg-x11-fonts-misc
 
 %description
 Key features of i3 are correct implementation of XrandR, horizontal and vertical
-columns (think of a table) in tiling. Also, special focus is on writing clean, 
+columns (think of a table) in tiling. Also, special focus is on writing clean,
 readable and well documented code. i3 uses xcb for asynchronous communication
 with X11, and has several measures to be very fast.
 
@@ -83,7 +82,6 @@ Asciidoc and doxygen generated documentations for %{name}.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
-%patch3 -p1
 
 # TODO: Drop all /usr/bin/env lines.
 # TODO: Drop old dwarf 2 option in CFLAGS.

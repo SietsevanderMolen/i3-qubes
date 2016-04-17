@@ -1,6 +1,6 @@
 diff -uNr i3-4.8/include/atoms.xmacro i3-4.8p/include/atoms.xmacro
---- i3-4.8/include/atoms.xmacro	2014-06-15 19:12:43.000000000 +0200
-+++ i3-4.8p/include/atoms.xmacro	2016-02-07 01:58:49.357252192 +0100
+--- i3-4.8/include/atoms.xmacro 2014-06-15 19:12:43.000000000 +0200
++++ i3-4.8p/include/atoms.xmacro    2016-02-07 01:58:49.357252192 +0100
 @@ -34,3 +34,5 @@
  xmacro(_NET_REQUEST_FRAME_EXTENTS)
  xmacro(_NET_FRAME_EXTENTS)
@@ -8,8 +8,8 @@ diff -uNr i3-4.8/include/atoms.xmacro i3-4.8p/include/atoms.xmacro
 +xmacro(_QUBES_VMNAME)
 +xmacro(_QUBES_LABEL)
 diff -uNr i3-4.8/include/data.h i3-4.8p/include/data.h
---- i3-4.8/include/data.h	2014-06-15 19:12:43.000000000 +0200
-+++ i3-4.8p/include/data.h	2016-02-07 01:58:49.358252192 +0100
+--- i3-4.8/include/data.h   2014-06-15 19:12:43.000000000 +0200
++++ i3-4.8p/include/data.h  2016-02-07 01:58:49.358252192 +0100
 @@ -348,6 +348,12 @@
      /** The name of the window. */
      i3String *name;
@@ -24,8 +24,8 @@ diff -uNr i3-4.8/include/data.h i3-4.8p/include/data.h
       * sets "buddy list"). Useful to match specific windows in assignments or
       * for_window. */
 diff -uNr i3-4.8/include/window.h i3-4.8p/include/window.h
---- i3-4.8/include/window.h	2014-06-15 19:12:43.000000000 +0200
-+++ i3-4.8p/include/window.h	2016-02-07 01:58:49.359252192 +0100
+--- i3-4.8/include/window.h 2014-06-15 19:12:43.000000000 +0200
++++ i3-4.8p/include/window.h    2016-02-07 01:58:49.359252192 +0100
 @@ -33,6 +33,20 @@
  void window_update_name_legacy(i3Window *win, xcb_get_property_reply_t *prop, bool before_mgmt);
  
@@ -47,9 +47,9 @@ diff -uNr i3-4.8/include/window.h i3-4.8p/include/window.h
   * Updates the CLIENT_LEADER (logical parent window).
   *
   */
-diff -uNr i3-4.8/src/commands.c i3-4.8p/src/commands.c
+diff -ur i3-4.8/src/commands.c i3-4.8p/src/commands.c
 --- i3-4.8/src/commands.c	2014-06-15 19:12:43.000000000 +0200
-+++ i3-4.8p/src/commands.c	2016-02-07 01:58:49.360252192 +0100
++++ i3-4.8p/src/commands.c	2016-04-17 16:36:10.478245138 +0200
 @@ -837,22 +837,20 @@
              border_style++;
              border_style %= 3;
@@ -81,9 +81,9 @@ diff -uNr i3-4.8/src/commands.c i3-4.8p/src/commands.c
                  ELOG("BUG: called with border_style=%s\n", border_style_str);
                  ysuccess(false);
                  return;
-diff -uNr i3-4.8/src/config.c i3-4.8p/src/config.c
+diff -ur i3-4.8/src/config.c i3-4.8p/src/config.c
 --- i3-4.8/src/config.c	2014-06-15 19:12:43.000000000 +0200
-+++ i3-4.8p/src/config.c	2016-02-07 01:58:49.361252192 +0100
++++ i3-4.8p/src/config.c	2016-04-17 16:36:10.478245138 +0200
 @@ -264,6 +264,12 @@
  
      parse_configuration(override_configpath);
@@ -97,9 +97,9 @@ diff -uNr i3-4.8/src/config.c i3-4.8p/src/config.c
      if (reload) {
          translate_keysyms();
          grab_all_keys(conn, false);
-diff -uNr i3-4.8/src/manage.c i3-4.8p/src/manage.c
---- i3-4.8/src/manage.c	2014-06-15 19:12:43.000000000 +0200
-+++ i3-4.8p/src/manage.c	2016-02-07 01:58:49.362252192 +0100
+diff -ur i3-4.8/src/manage.c i3-4.8p/src/manage.c
+--- i3-4.8/src/manage.c	2016-04-17 16:36:51.877245138 +0200
++++ i3-4.8p/src/manage.c	2016-04-17 16:36:10.478245138 +0200
 @@ -87,7 +87,7 @@
      xcb_get_window_attributes_reply_t *attr = NULL;
  
@@ -127,9 +127,9 @@ diff -uNr i3-4.8/src/manage.c i3-4.8p/src/manage.c
      window_update_leader(cwindow, xcb_get_property_reply(conn, leader_cookie, NULL));
      window_update_transient_for(cwindow, xcb_get_property_reply(conn, transient_cookie, NULL));
      window_update_strut_partial(cwindow, xcb_get_property_reply(conn, strut_cookie, NULL));
-diff -uNr i3-4.8/src/window.c i3-4.8p/src/window.c
+diff -ur i3-4.8/src/window.c i3-4.8p/src/window.c
 --- i3-4.8/src/window.c	2014-06-15 19:12:43.000000000 +0200
-+++ i3-4.8p/src/window.c	2016-02-07 01:58:49.363252192 +0100
++++ i3-4.8p/src/window.c	2016-04-17 16:36:10.479245138 +0200
 @@ -120,6 +120,57 @@
  }
  
@@ -188,10 +188,10 @@ diff -uNr i3-4.8/src/window.c i3-4.8p/src/window.c
   * Updates the CLIENT_LEADER (logical parent window).
   *
   */
-diff -uNr i3-4.8/src/x.c i3-4.8p/src/x.c
+diff -ur i3-4.8/src/x.c i3-4.8p/src/x.c
 --- i3-4.8/src/x.c	2014-06-15 19:12:43.000000000 +0200
-+++ i3-4.8p/src/x.c	2016-02-26 22:50:39.452566636 +0100
-@@ -341,10 +341,10 @@
++++ i3-4.8p/src/x.c	2016-04-17 16:36:10.478245138 +0200
+@@ -341,13 +341,77 @@
      /* find out which colors to use */
      if (con->urgent)
          p->color = &config.client.urgent;
@@ -200,53 +200,80 @@ diff -uNr i3-4.8/src/x.c i3-4.8p/src/x.c
 -    else if (con == TAILQ_FIRST(&(parent->focus_head)))
 -        p->color = &config.client.focused_inactive;
 +    // else if (con == focused || con_inside_focused(con))
-+        // p->color = &config.client.focused;
++    //    p->color = &config.client.focused;
 +    // else if (con == TAILQ_FIRST(&(parent->focus_head)))
-+        // p->color = &config.client.focused_inactive;
++    //    p->color = &config.client.focused_inactive;
      else
          p->color = &config.client.unfocused;
  
-@@ -407,6 +407,39 @@
-         xcb_poly_fill_rectangle(conn, con->pixmap, con->pm_gc, sizeof(background) / sizeof(xcb_rectangle_t), background);
-     }
- 
 +    struct Window *win = con->window;
 +    if (win != NULL) {
++        bool in_focus = con == focused || con_inside_focused(con);
++        if (in_focus) p->color = &config.client.focused;
++
 +        DLOG("con->qubes_label is %d\n", win->qubes_label);
 +        if (win->qubes_label == 0) { // dom0
-+            p->color->background = get_colorpixel("#000000");
 +            p->color->text = get_colorpixel("#ffffff");
++            if (in_focus)
++                p->color->background = get_colorpixel("#474747");
++            else
++                p->color->background = get_colorpixel("#303030");
 +        } else if (win->qubes_label == 1) { // red
-+            p->color->background = get_colorpixel("#ff0000");
 +            p->color->text = get_colorpixel("#000000");
++            if (in_focus)
++                p->color->background = get_colorpixel("#ff0000");
++            else
++                p->color->background = get_colorpixel("#ba0000");
 +        } else if (win->qubes_label == 2) { // orange
-+            p->color->background = get_colorpixel("#FFA500");
 +            p->color->text = get_colorpixel("#0059FF");
++            if (in_focus)
++                p->color->background = get_colorpixel("#ffa500");
++            else
++                p->color->background = get_colorpixel("#b87700");
 +        } else if (win->qubes_label == 3) { // yellow
-+            p->color->background = get_colorpixel("#ffff00");
 +            p->color->text = get_colorpixel("#000000");
++            if (in_focus)
++                p->color->background = get_colorpixel("#ffff00");
++            else
++                p->color->background = get_colorpixel("#baba00");
 +        } else if (win->qubes_label == 4) { // green
-+            p->color->background = get_colorpixel("#347235");
 +            p->color->text = get_colorpixel("#ffffff");
++            if (in_focus)
++                p->color->background = get_colorpixel("#347235");
++            else
++                p->color->background = get_colorpixel("#214822");
 +        } else if (win->qubes_label == 5) { // gray
-+            p->color->background = get_colorpixel("#848482");
 +            p->color->text = get_colorpixel("#ffffff");
++            if (in_focus)
++                p->color->background = get_colorpixel("#777775");
++            else
++                p->color->background = get_colorpixel("#5d5d5b");
 +        } else if (win->qubes_label == 6) { // blue
-+            p->color->background = get_colorpixel("#2B65EC");
 +            p->color->text = get_colorpixel("#000000");
++            if (in_focus)
++                p->color->background = get_colorpixel("#1e5ef3");
++            else
++                p->color->background = get_colorpixel("#133b98");
 +        } else if (win->qubes_label == 7) { // purple
-+            p->color->background = get_colorpixel("#7D1B7E");
 +            p->color->text = get_colorpixel("#ffffff");
++            if (in_focus)
++                p->color->background = get_colorpixel("#9a219b");
++            else
++                p->color->background = get_colorpixel("#621562");
 +        } else if (win->qubes_label == 8) { // black
-+            p->color->background = get_colorpixel("#000000");
 +            p->color->text = get_colorpixel("#ffffff");
++            if (in_focus)
++                p->color->background = get_colorpixel("#2f2f2f");
++            else
++                p->color->background = get_colorpixel("#000000");
 +        }
 +    }
 +
-     /* 3: draw a rectangle in border color around the client */
-     if (p->border_style != BS_NONE && p->con_is_leaf) {
-         /* We might hide some borders adjacent to the screen-edge */
-@@ -492,7 +525,6 @@
++
+     p->border_style = con_border_style(con);
+ 
+     Rect *r = &(con->rect);
+@@ -492,7 +556,6 @@
      set_font_colors(parent->pm_gc, p->color->text, p->color->background);
      int text_offset_y = (con->deco_rect.height - config.font.height) / 2;
  
@@ -254,7 +281,7 @@ diff -uNr i3-4.8/src/x.c i3-4.8p/src/x.c
      if (win == NULL) {
          /* we have a split container which gets a representation
           * of its children as title
-@@ -531,10 +563,16 @@
+@@ -531,10 +594,16 @@
      //DLOG("indent_level = %d, indent_mult = %d\n", indent_level, indent_mult);
      int indent_px = (indent_level * 5) * indent_mult;
  
