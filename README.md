@@ -14,18 +14,20 @@ user@vm$ git clone https://github.com/SietsevanderMolen/i3-qubes.git
 Then make sure all dependencies are installed:
 
 ```
-user@vm$ sudo dnf install fedpkg asciidoc bison doxygen flex libX11-devel libXcursor-devel libxcb-devel libxkbfile-devel pango-devel perl startup-notification-devel xcb-proto xcb-util-cursor-devel xcb-util-devel xcb-util-keysyms-devel xcb-util-wm-devel xmlto yajl-devel
+user@vm$ sudo dnf install -y $(cat build-deps.list)
 ```
 
-After that, compile the rpm:
+After that, download the sources, verify them and build the rpm:
 
 ```
-user@vm$ fedpkg --dist f20 local --builddir ~/rpmbuild
+user@vm$ make get-sources
+user@vm$ make verify-sources
+user@vm$ make rpms
 ```
 
 Then, copy the rpm to your Dom0:
 ```
-user@Dom0$ qvm-run --pass-io <vmname> 'cat /home/user/rpmbuild/x86_64/i3-4.8-3.f20.x86_64.rpm' > i3-4.8-3.f20.x86_64.rpm
+user@Dom0$ qvm-run --pass-io <vmname> 'cat /path/to/rpm/x86_64/i3-4.8-3.f20.x86_64.rpm' > i3-4.8-3.f20.x86_64.rpm
 ```
 
 And finally install it:
@@ -38,5 +40,5 @@ Log out, log in again and configure to your needs!
 
 ## Contributors
 https://github.com/SietsevanderMolen
-
 https://github.com/o-
+https://github.com/minad
