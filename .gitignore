@@ -1,1 +1,5 @@
-/i3-4.*.tar.bz2
+rpm/
+srpm/
+pkgs/
+*/*.tar.gz
+*/*.tar.bz2
