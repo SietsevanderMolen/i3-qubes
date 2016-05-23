@@ -29,15 +29,39 @@ Requires:   i3lock
 
 
 %install
-install -m 644 -D %{SOURCE0} %{buildroot}%{_sysconfdir}/i3/config
-install -m 644 -D %{SOURCE1} %{buildroot}%{_sysconfdir}/i3/config.keycodes
+install -m 644 -D %{SOURCE0} %{buildroot}%{_sysconfdir}/i3/config.qubes
+install -m 644 -D %{SOURCE1} %{buildroot}%{_sysconfdir}/i3/config.keycodes.qubes
 install -m 755 -D %{SOURCE2} %{buildroot}%{_sbindir}/qubes-i3-sensible-terminal.sh
 install -m 755 -D %{SOURCE3} %{buildroot}%{_sbindir}/qubes-i3status.sh
 install -m 755 -D %{SOURCE4} %{buildroot}%{_sbindir}/qubes-xdg-autostart.sh
 
+%define settings_replace() \
+origfile="`echo %{1} | sed 's/\.qubes$//'`"\
+backupfile="`echo %{1} | sed s/\.qubes$/\.i3/`"\
+if [ -r "$origfile" -a ! -r "$backupfile" ]; then\
+	mv -f "$origfile" "$backupfile"\
+fi\
+cp -f "%{1}" "$origfile"\
+%{nil}
+
+%triggerin -- i3-settings-qubes
+%settings_replace %{_sysconfdir}/i3/config.qubes
+%settings_replace %{_sysconfdir}/i3/config.keycodes.qubes
+
+%postun
+REPLACEFILE="${REPLACEFILE} %{_sysconfdir}/i3/config.qubes"
+REPLACEFILE="${REPLACEFILE} %{_sysconfdir}/i3/config.keycodes.qubes"
+if [ $1 -lt 1 ]; then
+	for file in ${REPLACEFILE}; do
+		origfile="`echo $file | sed 's/\.qubes$//'`"
+		backupfile="`echo $file | sed 's/\.qubes$/\.i3/'`"
+		mv -f "$backupfile" "$origfile"
+	done
+fi
+
 %files
-%{_sysconfdir}/i3/config
-%{_sysconfdir}/i3/config.keycodes
+%{_sysconfdir}/i3/config.qubes
+%{_sysconfdir}/i3/config.keycodes.qubes
 %{_sbindir}/qubes-i3-sensible-terminal.sh
 %{_sbindir}/qubes-i3status.sh
 %{_sbindir}/qubes-xdg-autostart.sh
