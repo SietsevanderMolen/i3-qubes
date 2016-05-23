@@ -1,6 +1,11 @@
+%if 0%{?qubes_builder}
+%define _sourcedir %(pwd)/i3
+%endif
+
 Name:           i3
 Version:        4.8
 Release:        3%{?dist}
+Epoch:          1000
 Summary:        Improved tiling window manager
 License:        BSD
 URL:            http://i3wm.org
@@ -56,8 +61,8 @@ Requires:       pango
 # 5.18.4 should be available to fc20
 #Requires:       perl(:MODULE_COMPAT_%(eval "`perl -V:version`"; echo $version))
 Requires:       perl(:MODULE_COMPAT_5.18.4)
-Recommends:     rxvt-unicode
-Recommends:     xorg-x11-apps
+#Recommends:     rxvt-unicode
+#Recommends:     xorg-x11-apps
 Requires:       xorg-x11-fonts-misc
 
 %description
