@@ -56,7 +56,7 @@ ifneq ($(SRC_FILE), None)
 	-rm $(SRC_FILE)
 endif
 
-rpms: verify-sources rpms-dom0
+rpms: rpms-dom0
 
 rpms-vm:
 

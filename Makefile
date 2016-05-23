@@ -1,4 +1,4 @@
-SUBDIRS := i3
+SUBDIRS := i3 i3-settings-qubes
 
 help:
 	@echo "make rpms        -- generate binary rpm packages"
