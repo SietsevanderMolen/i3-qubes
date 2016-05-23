@@ -17,11 +17,9 @@ Then make sure all dependencies are installed:
 user@vm$ sudo dnf install -y $(cat build-deps.list)
 ```
 
-After that, download the sources, verify them and build the rpm:
+After that, build the rpm:
 
 ```
-user@vm$ make get-sources
-user@vm$ make verify-sources
 user@vm$ make rpms
 ```
 
