@@ -45,7 +45,7 @@ endif
 
 .PHONY: verify-sources
 
-verify-sources:
+verify-sources: $(SRC_FILE)
 ifneq ($(SRC_FILE), None)
 	@sha256sum --quiet -c sources
 endif
@@ -56,14 +56,14 @@ ifneq ($(SRC_FILE), None)
 	-rm $(SRC_FILE)
 endif
 
-rpms: rpms-dom0
+rpms: verify-sources rpms-dom0
 
 rpms-vm:
 
 rpms-dom0:
 	rpmbuild $(RPM_DEFINES) -bb $(SPECFILE)
 
-srpms:
+srpms: verify-sources
 	rpmbuild $(RPM_DEFINES) -bs $(SPECFILE)
 
 update-repo-current:
