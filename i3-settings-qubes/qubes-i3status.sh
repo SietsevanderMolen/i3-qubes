@@ -12,13 +12,13 @@ json() {
 
 status_net() {
     local net=$(qvm-run $WIFI_VM -p 'iwconfig; ifconfig' 2>/dev/null)
-    local ssid=$(echo "$net" | perl -ne 'print $1 if /ESSID:"(.*)"/')
+    local ssid=$(echo "$net" | perl -ne 'print " $1" if /ESSID:"(.*)"/')
     if [[ -n $ssid ]]; then
-        local quality=$(echo "$net" | perl -ne 'print "$1 " if /Quality=([^ ]+)/')
-        json wifi "W: $quality$ssid"
+        local quality=$(echo "$net" | perl -ne 'print " $1" if /Quality=([^ ]+)/')
+        json wifi "W:$quality$ssid"
     fi
-    local ip=$(echo "$net" | perl -ne 'if (/^[w|e]/../^$/) { print $1 if /inet ([^ ]+)/ }')
-    [[ -n $ip ]] && json ip "I: $ip"
+    local ip=$(echo "$net" | perl -ne 'if (/^[w|e]/../^$/) { print " $1" if /inet ([^ ]+)/ }')
+    [[ -n $ip ]] && json ip "I:$ip"
 }
 
 status_time() {
