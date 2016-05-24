@@ -26,7 +26,7 @@ font pango:DejaVu Sans Mono 8
 floating_modifier $mod
 
 # start a terminal in the domain of the currently active window
-bindcode $mod+36 exec /sbin/qubes-i3-sensible-terminal.sh
+bindcode $mod+36 exec qubes-i3-sensible-terminal
 
 # kill focused window
 bindcode $mod+Shift+24 kill
@@ -144,7 +144,7 @@ bindcode $mod+27 mode "resize"
 # Start i3bar to display a workspace bar (plus the system information i3status
 # finds out, if available)
 bar {
-        status_command /sbin/qubes-i3status.sh
+        status_command qubes-i3status
 }
 
 # Use a screen locker
@@ -152,4 +152,4 @@ exec --no-startup-id "xautolock -detectsleep -time 3 -locker 'i3lock -d -c 00000
 
 # Make sure all xdg autostart entries are started, this is (among other things)
 # necessary to make sure transient vm's come up
-exec --no-startup-id "/sbin/qubes-xdg-autostart.sh"
+exec --no-startup-id qubes-i3-xdg-autostart
