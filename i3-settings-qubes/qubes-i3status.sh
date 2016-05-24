@@ -1,7 +1,5 @@
 #!/bin/bash
 
-WIFI_VM="sys-net"
-
 json() {
     if [[ -n "$3" ]]; then
         echo -n "{\"name\":\"$1\",\"color\":\"$3\",\"full_text\":\"$2\"},"
@@ -11,14 +9,34 @@ json() {
 }
 
 status_net() {
-    local net=$(qvm-run $WIFI_VM -p 'iwconfig; ifconfig' 2>/dev/null)
-    local ssid=$(echo "$net" | perl -ne 'print " $1" if /ESSID:"(.*)"/')
-    if [[ -n $ssid ]]; then
-        local quality=$(echo "$net" | perl -ne 'print " $1" if /Quality=([^ ]+)/')
-        json wifi "W:$quality$ssid"
-    fi
-    local ip=$(echo "$net" | perl -ne 'if (/^[w|e]/../^$/) { print " $1" if /inet ([^ ]+)/ }')
-    [[ -n $ip ]] && json ip "I:$ip"
+    local netvms=$(qvm-ls | awk -F "|" '$5 ~ /.*Net.*/ {match($1, /.*{(.*)}.*/, arr); print arr[1]}')
+
+    IFS_BAK=$IFS
+    IFS=$'\n'
+    for netvm in $netvms; do
+        local ip_addr=$(qvm-run "$netvm" -p 'ip -o -f inet addr' 2>/dev/null)
+        for ip_addr_line in $ip_addr; do
+            local device_name=${ip_addr_line#* }
+            device_name=${device_name%% *}
+
+            if [[ $device_name == wl* ]]; then # this is a wifi device
+                local net=$(qvm-run $netvm -p 'iwconfig' 2>/dev/null)
+                local ssid=$(echo "$net" | perl -ne 'print "$1" if /ESSID:"(.*)"/')
+                local ip=${ip_addr_line#* inet }
+                ip=${ip%%/*}
+                if [[ -n $ssid ]]; then
+                    local quality=$(echo "$net" | perl -ne 'print "$1" if /Quality=([^ ]+)/')
+                    json $device_name "$netvm: $ssid $ip $quality"
+                fi
+            elif [[ $device_name == en* ]]; then # this is an ethernet device
+                local ip=${ip_addr_line#* inet }
+                ip=${ip%%/*}
+                json $device_name "$netvm: $ip"
+            fi
+        done
+    done
+    IFS=$IFS_BAK
+    IFS_BAK=
 }
 
 status_time() {
@@ -27,40 +45,43 @@ status_time() {
 }
 
 status_bat() {
-    local bat_now=$(cat /sys/class/power_supply/BAT0/energy_now 2>/dev/null)
-    local bat_full=$(cat /sys/class/power_supply/BAT0/energy_full_design 2>/dev/null)
-    if [[ -n "$bat_full" ]]; then
-        local bat=$((100*bat_now/bat_full))
+    local accum_now=0;
+    local accum_full=0;
 
-        local ac=''
-        local color='#00ff00'
-        if [[ $(cat /sys/class/power_supply/AC/online) == '1' ]]; then
-            ac=' AC'
-        elif ((bat < 25)); then
-            color='#ff0000'
-        elif ((bat < 50)); then
-            color='#ffff00'
-        fi
+    for battery in /sys/class/power_supply/BAT*; do
+        accum_now=$((accum_now + $(cat $battery/energy_now)))
+        accum_full=$((accum_full + $(cat $battery/energy_full)))
+    done
+    local bat=$((100*accum_now/accum_full))
 
-        json bat "B: $bat%$ac" "$color"
+    local ac=''
+    local color='#00ff00'
+    if [[ $(cat /sys/class/power_supply/AC/online) == '1' ]]; then
+        ac=' AC'
+    elif ((bat < 25)); then
+        color='#ff0000'
+    elif ((bat < 50)); then
+        color='#ffff00'
     fi
+
+    json bat "Bat: $bat%$ac" "$color"
 }
 
 status_load() {
     local load=$(uptime)
     load=${load/#*load average: }
     load=${load%,*,*}
-    json load "$load"
+    json load "Load: $load"
 }
 
 status_qubes() {
     local qubes=$(qvm-ls 2>/dev/null | grep ' \* ' | wc -l)
-    json qubes "$qubes Q"
+    json qubes "$qubes Qubes"
 }
 
 status_disk() {
     local disk=`df -h / | tail -n 1 | awk '{print $4}'`
-    json disk "D: $disk"
+    json disk "Disk: $disk"
 }
 
 main() {
