@@ -3,7 +3,7 @@
 %endif
 
 Name:       i3-settings-qubes
-Version:    1.0
+Version:    1.1
 Release:    1%{?dist}
 Summary:    Default i3 settings for Qubes
 
