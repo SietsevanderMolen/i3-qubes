@@ -4,7 +4,7 @@
 
 Name:           i3
 Version:        4.8
-Release:        3%{?dist}
+Release:        4%{?dist}
 Epoch:          1000
 Summary:        Improved tiling window manager
 License:        BSD
