@@ -57,10 +57,8 @@ BuildRequires:  yajl-devel
 Requires:       dmenu
 Requires:       dzen2
 Requires:       pango
-# we're building in a different vm, so we can't rely on the perl version
-# 5.18.4 should be available to fc20
-#Requires:       perl(:MODULE_COMPAT_%(eval "`perl -V:version`"; echo $version))
-Requires:       perl(:MODULE_COMPAT_5.18.4)
+Requires:       perl(:MODULE_COMPAT_%(eval "`perl -V:version`"; echo $version))
+#Requires:       perl(:MODULE_COMPAT_5.18.4)
 #Recommends:     rxvt-unicode
 #Recommends:     xorg-x11-apps
 Requires:       xorg-x11-fonts-misc
