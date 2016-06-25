@@ -1,5 +1,5 @@
 # i3-qubes
-Qubes OS rpm for i3 4.8
+Qubes OS rpm for i3 4.12
 
 You'll find the full installation instructions and more information on https://sietse.no/i3-wm-in-qubes-os
 
@@ -25,13 +25,13 @@ user@vm$ make rpms
 
 Then, copy the rpm to your Dom0:
 ```
-user@Dom0$ qvm-run --pass-io <vmname> 'cat /path/to/rpm/x86_64/i3-4.8-3.f20.x86_64.rpm' > i3-4.8-3.f20.x86_64.rpm
+user@Dom0$ qvm-run --pass-io <vmname> 'cat /path/to/rpm/x86_64/i3-4.12-3.f23.x86_64.rpm' > i3-4.12-3.f23.x86_64.rpm
 ```
 
 And finally install it:
 
 ```
-user@Dom0$ sudo yum localinstall i3-4.8-3.f20.x86_64.rpm
+user@Dom0$ sudo yum localinstall i3-4.12-3.f23.x86_64.rpm
 ```
 
 Log out, log in again and configure to your needs!

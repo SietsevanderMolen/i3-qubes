@@ -3,8 +3,8 @@
 %endif
 
 Name:           i3
-Version:        4.8
-Release:        4%{?dist}
+Version:        4.12
+Release:        3%{?dist}
 Epoch:          1000
 Summary:        Improved tiling window manager
 License:        BSD
@@ -12,15 +12,17 @@ URL:            http://i3wm.org
 Source0:        http://i3wm.org/downloads/%{name}-%{version}.tar.bz2
 Source1:        %{name}-logo.svg
 Patch0:         0001-Show-qubes-domain-in-non-optional-colored-borders.patch
-Patch1:         0002-Bugfix-add-a-sync-call-to-i3bar-to-confirm-reparents.patch
-Patch2:         0003-Dont-focus-unmapped-container-on-manage.patch
+
 BuildRequires:  asciidoc
 BuildRequires:  bison
+BuildRequires:  cairo-devel
 BuildRequires:  flex
+BuildRequires:  libX11-devel
 BuildRequires:  libev-devel
 BuildRequires:  libX11-devel
 BuildRequires:  libxcb-devel
 BuildRequires:  libXcursor-devel
+BuildRequires:  libxkbcommon-x11-devel
 BuildRequires:  libxkbfile-devel
 BuildRequires:  pango-devel
 BuildRequires:  pcre-devel
@@ -42,6 +44,7 @@ BuildRequires:  pcre-devel
 #BuildRequires:  perl(AnyEvent::I3)
 #BuildRequires:  perl(X11::XCB::Connection)
 #BuildRequires:  perl(Carp)
+BuildRequires:  perl(Getopt::Long)
 BuildRequires:  perl(Data::Dumper::Names)
 BuildRequires:  startup-notification-devel
 BuildRequires:  xcb-proto
@@ -54,13 +57,15 @@ BuildRequires:  xmlto
 BuildRequires:  xorg-x11-drv-dummy
 %endif
 BuildRequires:  yajl-devel
+
 Requires:       dmenu
 Requires:       dzen2
-Requires:       pango
 Requires:       perl(:MODULE_COMPAT_%(eval "`perl -V:version`"; echo $version))
+# TODO - CHECK THIS - we're building in a different vm, so we can't rely on the perl version
+# 5.18.4 should be available to fc20
 #Requires:       perl(:MODULE_COMPAT_5.18.4)
-#Recommends:     rxvt-unicode
-#Recommends:     xorg-x11-apps
+Recommends:     rxvt-unicode
+Recommends:     xorg-x11-apps
 Requires:       xorg-x11-fonts-misc
 
 %description
@@ -77,26 +82,28 @@ BuildRequires:  doxygen
 BuildArch:      noarch
 Requires:       %{name} = %{version}-%{release}
 
-%description doc
+%description    doc
 Asciidoc and doxygen generated documentations for %{name}.
 
 %prep
 %setup -q
 %patch0 -p1
-%patch1 -p1
-%patch2 -p1
 
-# TODO: Drop all /usr/bin/env lines.
-# TODO: Drop old dwarf 2 option in CFLAGS.
+# Drop /usr/bin/env lines in those which will be installed to %%_bindir.
+find . -maxdepth 1 -type f -name "i3*" -exec sed -i -e '1s;^#!/usr/bin/env perl;#!/usr/bin/perl;' {} + -print
+
+# 1. Drop dwarf-2, -g3 in CFLAGS recommended by gcc maintainer. Since upstream
+# uses -pipe and -g only, we can safely ignore these, but ldflags needs
+# override still.
+# 2. Preserve the timestamps.
 sed -i -e 's|LDFLAGS ?=|override LDFLAGS +=|g' \
-       -e 's|CFLAGS ?=|override CFLAGS +=|g' \
        -e 's|INSTALL=.*|INSTALL=install -p|g' \
        common.mk
 
 %build
-make CFLAGS="%{optflags}" LDFLAGS="%{?__global_ldflags}" %{?_smp_mflags} V=1
-make -C man %{?_smp_mflags} V=1
-make -C docs %{?_smp_mflags} V=1
+%make_build CFLAGS="%{optflags}" LDFLAGS="%{?__global_ldflags}" V=1
+%make_build -C man V=1
+%make_build -C docs V=1
 
 doxygen pseudo-doc.doxygen
 mv pseudo-doc/html pseudo-doc/doxygen
@@ -119,7 +126,8 @@ install -Dpm0644 %{SOURCE1} \
 %endif
 
 %files
-%doc LICENSE RELEASE-NOTES-%{version}
+%doc RELEASE-NOTES-%{version}
+%license LICENSE
 %{_bindir}/%{name}*
 %{_includedir}/%{name}/
 %dir %{_sysconfdir}/%{name}/
@@ -135,6 +143,53 @@ install -Dpm0644 %{SOURCE1} \
 %doc docs/*.{html,png} pseudo-doc/doxygen/
 
 %changelog
+* Mon Mar 07 2016 Christian Dersch <lupinix@mailbox.org> - 4.12-3
+- Fixed mispelled dependency i3status
+
+* Sun Mar 06 2016 Christian Dersch <lupinix@mailbox.org> - 4.12-2
+- Added BR: cairo-devel to enable new rendering implementation
+
+* Sun Mar 06 2016 Christian Dersch <lupinix@mailbox.org> - 4.12-1
+- Upgrade to version 4.12
+
+* Thu Feb 04 2016 Fedora Release Engineering <releng@fedoraproject.org> - 4.11-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
+
+* Wed Nov 18 2015 Christian Dersch <lupinix@mailbox.org> - 4.11-1
+- new version
+
+* Tue Sep 08 2015 Christopher Meng <rpm@cicku.me> - 4.10.4-1
+- Update to 4.10.4
+
+* Fri Aug 14 2015 Jonathan Underwood <jonathan.underwood@gmail.com> - 4.10.3-3
+- Fix typo in spec file
+
+* Fri Aug 14 2015 Jonathan Underwood <jonathan.underwood@gmail.com> - 4.10.3-2
+- Add Recommends for i3-status
+- Move Requires for rxvt-unicode and xorg-x11-apps to Recommends
+
+* Thu Aug 13 2015 Martin Preisler <mpreisle@redhat.com> - 4.10.3-1
+- Update to 4.10.3 (#1248840)
+- Added Getopt::Long perl build dep
+
+* Wed Jun 17 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.10.2-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
+
+* Fri Jun 05 2015 Jitka Plesnikova <jplesnik@redhat.com> - 4.10.2-2
+- Perl 5.22 rebuild
+
+* Sun May 17 2015 Björn Esser <bjoern.esser@gmail.com> - 4.10.2-1
+- Update to 4.10.2 (#1206967)
+
+* Sun Mar 08 2015 Christopher Meng <rpm@cicku.me> - 4.9.1-1
+- Update to 4.9.1
+
+* Thu Aug 28 2014 Jitka Plesnikova <jplesnik@redhat.com> - 4.8-5
+- Perl 5.20 rebuild
+
+* Sat Aug 16 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.8-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
+
 * Fri Jul 04 2014 Dan Horák <dan[at]danny.cz> - 4.8-3
 - no xorg-x11-drv-* on s390(x)
 
