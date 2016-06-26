@@ -6,5 +6,4 @@ install:
  - wget http://i3wm.org/downloads/i3-4.12.tar.bz2 -O i3/i3-4.12.tar.bz2
 script: ~/qubes-builder/scripts/travis-build
 env:
- - DIST_DOM0=fc20 USE_QUBES_REPO_VERSION=3.1
  - DIST_DOM0=fc23 USE_QUBES_REPO_VERSION=3.2 USE_QUBES_REPO_TESTING=1
