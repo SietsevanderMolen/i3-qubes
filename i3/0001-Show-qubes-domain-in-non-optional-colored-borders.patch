@@ -198,39 +198,39 @@ diff -uNr i3-4.12/src/x.c i3-4.12p/src/x.c
 +        switch (win->qubes_label) {
 +        case 0: // dom0
 +            p->color->text = draw_util_hex_to_color("#ffffff");
-+            p->color->background = draw_util_hex_to_color(in_focus ? "#474747" : "#303030");
++            p->color->background = p->color->child_border = p->color->border = draw_util_hex_to_color(in_focus ? "#474747" : "#303030");
 +            break;
 +        case 1: // red
 +            p->color->text = draw_util_hex_to_color("#000000");
-+            p->color->background = draw_util_hex_to_color(in_focus ? "#ff0000" : "#ba0000");
++            p->color->background = p->color->child_border = p->color->border = draw_util_hex_to_color(in_focus ? "#ff0000" : "#ba0000");
 +            break;
 +        case 2: // orange
 +            p->color->text = draw_util_hex_to_color("#0059FF");
-+            p->color->background = draw_util_hex_to_color(in_focus ? "#ffa500" : "#b87700");
++            p->color->background = p->color->child_border = p->color->border = draw_util_hex_to_color(in_focus ? "#ffa500" : "#b87700");
 +            break;
 +        case 3: // yellow
 +            p->color->text = draw_util_hex_to_color("#000000");
-+            p->color->background = draw_util_hex_to_color(in_focus ? "#ffff00" : "#baba00");
++            p->color->background = p->color->child_border = p->color->border = draw_util_hex_to_color(in_focus ? "#ffff00" : "#baba00");
 +            break;
 +        case 4: // green
 +            p->color->text = draw_util_hex_to_color("#ffffff");
-+            p->color->background = draw_util_hex_to_color(in_focus ? "#347235" : "#214822");
++            p->color->background = p->color->child_border = p->color->border = draw_util_hex_to_color(in_focus ? "#347235" : "#214822");
 +            break;
 +        case 5: // gray
 +            p->color->text = draw_util_hex_to_color("#ffffff");
-+            p->color->background = draw_util_hex_to_color(in_focus ? "#777775" : "#5d5d5b");
++            p->color->background = p->color->child_border = p->color->border = draw_util_hex_to_color(in_focus ? "#777775" : "#5d5d5b");
 +            break;
 +        case 6: // blue
 +            p->color->text = draw_util_hex_to_color("#000000");
-+            p->color->background = draw_util_hex_to_color(in_focus ? "#1e5ef3" : "#133b98");
++            p->color->background = p->color->child_border = p->color->border = draw_util_hex_to_color(in_focus ? "#1e5ef3" : "#133b98");
 +            break;
 +        case 7: // purple
 +            p->color->text = draw_util_hex_to_color("#ffffff");
-+            p->color->background = draw_util_hex_to_color(in_focus ? "#9a219b" : "#621562");
++            p->color->background = p->color->child_border = p->color->border = draw_util_hex_to_color(in_focus ? "#9a219b" : "#621562");
 +            break;
 +        case 8: // black
 +            p->color->text = draw_util_hex_to_color("#ffffff");
-+            p->color->background = draw_util_hex_to_color(in_focus ? "#2f2f2f" : "#000000");
++            p->color->background = p->color->child_border = p->color->border = draw_util_hex_to_color(in_focus ? "#2f2f2f" : "#000000");
 +            break;
 +        }
 +    }
