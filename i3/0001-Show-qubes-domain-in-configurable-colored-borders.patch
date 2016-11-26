@@ -1,0 +1,606 @@
+diff -uNr i3-4.12/include/atoms_rest.xmacro i3-4.12p/include/atoms_rest.xmacro
+--- i3-4.12/include/atoms_rest.xmacro	2016-11-26 03:00:35.566619804 -0800
++++ i3-4.12p/include/atoms_rest.xmacro	2016-11-26 01:06:49.885619804 -0800
+@@ -17,3 +17,5 @@
+ xmacro(_NET_REQUEST_FRAME_EXTENTS)
+ xmacro(_NET_FRAME_EXTENTS)
+ xmacro(_MOTIF_WM_HINTS)
++xmacro(_QUBES_VMNAME)
++xmacro(_QUBES_LABEL)
+diff -uNr i3-4.12/include/config_directives.h i3-4.12p/include/config_directives.h
+--- i3-4.12/include/config_directives.h	2016-11-26 03:00:35.566619804 -0800
++++ i3-4.12p/include/config_directives.h	2016-11-26 02:00:38.564619804 -0800
+@@ -59,7 +59,7 @@
+ CFGFUN(ipc_socket, const char *path);
+ CFGFUN(restart_state, const char *path);
+ CFGFUN(popup_during_fullscreen, const char *value);
+-CFGFUN(color, const char *colorclass, const char *border, const char *background, const char *text, const char *indicator, const char *child_border);
++CFGFUN(color, const char *colorclass, const char *labelqube, const char *border, const char *background, const char *text, const char *indicator, const char *child_border);
+ CFGFUN(color_single, const char *colorclass, const char *color);
+ CFGFUN(floating_modifier, const char *modifiers);
+ CFGFUN(new_window, const char *windowtype, const char *border, const long width);
+diff -uNr i3-4.12/include/config.h i3-4.12p/include/config.h
+--- i3-4.12/include/config.h	2016-11-26 03:00:35.566619804 -0800
++++ i3-4.12p/include/config.h	2016-11-26 01:24:18.515619804 -0800
+@@ -209,7 +209,7 @@
+         struct Colortriple unfocused;
+         struct Colortriple urgent;
+         struct Colortriple placeholder;
+-    } client;
++    } client[QUBE_NUM_LABELS];
+     struct config_bar {
+         struct Colortriple focused;
+         struct Colortriple unfocused;
+diff -uNr i3-4.12/include/data.h i3-4.12p/include/data.h
+--- i3-4.12/include/data.h	2016-11-26 03:00:35.566619804 -0800
++++ i3-4.12p/include/data.h	2016-11-26 01:24:57.578619804 -0800
+@@ -126,6 +126,23 @@
+     POINTER_WARPING_NONE = 1
+ } warping_t;
+ 
++ /**
++ * Qubes colors
++ */
++typedef enum {
++    QUBE_DOM0 = 0,
++    QUBE_RED = 1,
++    QUBE_ORANGE = 2,
++    QUBE_YELLOW = 3,
++    QUBE_GREEN = 4,
++    QUBE_GRAY = 5,
++    QUBE_BLUE = 6,
++    QUBE_PURPLE = 7,
++    QUBE_BLACK = 8,
++} qube_label_t;
++
++#define QUBE_NUM_LABELS 9
++
+ /**
+  * Stores a rectangle, for example the size of a window, the child window etc.
+  * It needs to be packed so that the compiler will not add any padding bytes.
+@@ -377,6 +394,12 @@
+     /** The name of the window. */
+     i3String *name;
+ 
++    /** The name of the qubes vm. */
++    i3String *qubes_vmname;
++
++    /** The qubes label. */
++    int qubes_label;
++
+     /** The WM_WINDOW_ROLE of this window (for example, the pidgin buddy window
+      * sets "buddy list"). Useful to match specific windows in assignments or
+      * for_window. */
+diff -uNr i3-4.12/include/window.h i3-4.12p/include/window.h
+--- i3-4.12/include/window.h	2016-11-26 03:00:35.565619804 -0800
++++ i3-4.12p/include/window.h	2016-11-26 01:06:49.886619804 -0800
+@@ -39,6 +39,20 @@
+ void window_update_name_legacy(i3Window *win, xcb_get_property_reply_t *prop, bool before_mgmt);
+ 
+ /**
++ * Updates the qubes vmname by using _QUBES_VMNAME (encoded in UTF-8) for the given
++ * window.
++ *
++ */
++void window_update_qubes_vmname(i3Window *win, xcb_get_property_reply_t *prop, bool before_mgmt);
++
++/**
++ * Updates the qubes label by using _QUBES_LABEL (encoded in UTF-8) for the given
++ * window.
++ *
++ */
++void window_update_qubes_label(i3Window *win, xcb_get_property_reply_t *prop, bool before_mgmt);
++
++/**
+  * Updates the CLIENT_LEADER (logical parent window).
+  *
+  */
+diff -uNr i3-4.12/parser-specs/config.spec i3-4.12p/parser-specs/config.spec
+--- i3-4.12/parser-specs/config.spec	2016-11-26 03:00:35.564619804 -0800
++++ i3-4.12p/parser-specs/config.spec	2016-11-26 01:27:56.615619804 -0800
+@@ -49,7 +49,7 @@
+   colorclass = 'client.background'
+       -> COLOR_SINGLE
+   colorclass = 'client.focused_inactive', 'client.focused', 'client.unfocused', 'client.urgent', 'client.placeholder'
+-      -> COLOR_BORDER
++      -> COLOR_QUBE
+ 
+ # We ignore comments and 'set' lines (variables).
+ state IGNORE_LINE:
+@@ -268,6 +268,10 @@
+       -> call cfg_color_single($colorclass, $color)
+ 
+ # colorclass border background text indicator
++state COLOR_QUBE:
++  qubelabel = word
++      -> COLOR_BORDER
++
+ state COLOR_BORDER:
+   border = word
+       -> COLOR_BACKGROUND
+@@ -284,13 +288,13 @@
+   indicator = word
+       -> COLOR_CHILD_BORDER
+   end
+-      -> call cfg_color($colorclass, $border, $background, $text, NULL, NULL)
++      -> call cfg_color($colorclass, $qubelabel, $border, $background, $text, NULL, NULL)
+ 
+ state COLOR_CHILD_BORDER:
+   child_border = word
+-      -> call cfg_color($colorclass, $border, $background, $text, $indicator, $child_border)
++      -> call cfg_color($colorclass, $qubelabel, $border, $background, $text, $indicator, $child_border)
+   end
+-      -> call cfg_color($colorclass, $border, $background, $text, $indicator, NULL)
++      -> call cfg_color($colorclass, $qubelabel, $border, $background, $text, $indicator, NULL)
+ 
+ # <exec|exec_always> [--no-startup-id] command
+ state EXEC:
+diff -uNr i3-4.12/src/commands.c i3-4.12p/src/commands.c
+--- i3-4.12/src/commands.c	2016-11-26 03:00:35.569619804 -0800
++++ i3-4.12p/src/commands.c	2016-11-26 01:06:49.886619804 -0800
+@@ -730,22 +730,16 @@
+         if (strcmp(border_style_str, "toggle") == 0) {
+             border_style++;
+             border_style %= 3;
+-            if (border_style == BS_NORMAL)
+-                con_border_width = 2;
+-            else if (border_style == BS_NONE)
+-                con_border_width = 0;
+-            else if (border_style == BS_PIXEL)
+-                con_border_width = 1;
++            con_border_width = 3;
+         } else {
+             if (strcmp(border_style_str, "normal") == 0) {
+                 border_style = BS_NORMAL;
+             } else if (strcmp(border_style_str, "pixel") == 0) {
+                 border_style = BS_PIXEL;
+-            } else if (strcmp(border_style_str, "1pixel") == 0) {
++            } else if (strcmp(border_style_str, "1pixel") == 0 ||
++                       strcmp(border_style_str, "none") == 0) {
+                 border_style = BS_PIXEL;
+-                con_border_width = 1;
+-            } else if (strcmp(border_style_str, "none") == 0) {
+-                border_style = BS_NONE;
++                con_border_width = 3;
+             } else {
+                 ELOG("BUG: called with border_style=%s\n", border_style_str);
+                 ysuccess(false);
+diff -uNr i3-4.12/src/config.c i3-4.12p/src/config.c
+--- i3-4.12/src/config.c	2016-11-26 03:00:35.568619804 -0800
++++ i3-4.12p/src/config.c	2016-11-26 02:38:51.693619804 -0800
+@@ -207,14 +207,100 @@
+         x.child_border = draw_util_hex_to_color(cbackground);  \
+     } while (0)
+ 
+-    config.client.background = draw_util_hex_to_color("#000000");
+-    INIT_COLOR(config.client.focused, "#4c7899", "#285577", "#ffffff", "#2e9ef4");
+-    INIT_COLOR(config.client.focused_inactive, "#333333", "#5f676a", "#ffffff", "#484e50");
+-    INIT_COLOR(config.client.unfocused, "#333333", "#222222", "#888888", "#292d2e");
+-    INIT_COLOR(config.client.urgent, "#2f343a", "#900000", "#ffffff", "#900000");
++    config.client[QUBE_DOM0].background = draw_util_hex_to_color("#121212");
++    INIT_COLOR(config.client[QUBE_DOM0].focused,
++        "#522702", "#522702", "#ffffff", "#a6907d");
++    INIT_COLOR(config.client[QUBE_DOM0].focused_inactive,
++        "#522702", "#361a01", "#ffffff", "#a6907d");
++    INIT_COLOR(config.client[QUBE_DOM0].unfocused,
++        "#522702", "#361a01", "#999999", "#a6907d");
++    INIT_COLOR(config.client[QUBE_DOM0].urgent,
++        "#666666", "#a6907d", "#ce0000", "#a6907d");
++
++    config.client[QUBE_RED].background = draw_util_hex_to_color("#121212");
++    INIT_COLOR(config.client[QUBE_RED].focused,
++        "#e53b27", "#e53b27", "#ffffff", "#f19b90");
++    INIT_COLOR(config.client[QUBE_RED].focused_inactive,
++        "#e53b27", "#902519", "#ffffff", "#f19b90");
++    INIT_COLOR(config.client[QUBE_RED].unfocused,
++        "#e53b27", "#902519", "#999999", "#f19b90");
++    INIT_COLOR(config.client[QUBE_RED].urgent,
++        "#e53b27", "#f19b90", "#ce0000", "#f19b90");
++
++    config.client[QUBE_ORANGE].background = draw_util_hex_to_color("#121212");
++    INIT_COLOR(config.client[QUBE_ORANGE].focused,
++        "#d05f03", "#d05f03", "#ffffff", "#daa67e");
++    INIT_COLOR(config.client[QUBE_ORANGE].focused_inactive,
++        "#d05f03", "#7b3702", "#ffffff", "#daa67e");
++    INIT_COLOR(config.client[QUBE_ORANGE].unfocused,
++        "#d05f03", "#7b3702", "#999999", "#daa67e");
++    INIT_COLOR(config.client[QUBE_ORANGE].urgent,
++        "#d05f03", "#daa67e", "#ce0000", "#daa67e");
++
++    config.client[QUBE_YELLOW].background = draw_util_hex_to_color("#121212");
++    INIT_COLOR(config.client[QUBE_YELLOW].focused,
++        "#999b00", "#999b00", "#ffffff", "#cacb7c");
++    INIT_COLOR(config.client[QUBE_YELLOW].focused_inactive,
++        "#999b00", "#666700", "#ffffff", "#cacb7c");
++    INIT_COLOR(config.client[QUBE_YELLOW].unfocused,
++        "#999b00", "#666700", "#999999", "#cacb7c");
++    INIT_COLOR(config.client[QUBE_YELLOW].urgent,
++        "#999b00", "#cacb7c", "#ce0000", "#cacb7c");
++
++    config.client[QUBE_GREEN].background = draw_util_hex_to_color("#121212");
++    INIT_COLOR(config.client[QUBE_GREEN].focused,
++        "#04af5b", "#04af5b", "#ffffff", "#7dd5aa");
++    INIT_COLOR(config.client[QUBE_GREEN].focused_inactive,
++        "#04af5b", "#02713b", "#ffffff", "#7dd5aa");
++    INIT_COLOR(config.client[QUBE_GREEN].unfocused,
++        "#04af5b", "#02713b", "#999999", "#7dd5aa");
++    INIT_COLOR(config.client[QUBE_GREEN].urgent,
++        "#04af5b", "#7dd5aa", "#ce0000", "#7dd5aa");
++
++    config.client[QUBE_GRAY].background = draw_util_hex_to_color("#121212");
++    INIT_COLOR(config.client[QUBE_GRAY].focused,
++        "#8c959f", "#8c959f", "#ffffff", "#c3c8cd");
++    INIT_COLOR(config.client[QUBE_GRAY].focused_inactive,
++        "#8c959f", "#676d75", "#ffffff", "#c3c8cd");
++    INIT_COLOR(config.client[QUBE_GRAY].unfocused,
++        "#8c959f", "#676d75", "#999999", "#c3c8cd");
++    INIT_COLOR(config.client[QUBE_GRAY].urgent,
++        "#8c959f", "#c3c8cd", "#ce0000", "#c3c8cd");
++
++    config.client[QUBE_BLUE].background = draw_util_hex_to_color("#121212");
++    INIT_COLOR(config.client[QUBE_BLUE].focused,
++        "#3384d6", "#3384d6", "#ffffff", "#95bee8");
++    INIT_COLOR(config.client[QUBE_BLUE].focused_inactive,
++        "#3384d6", "#1f5082", "#ffffff", "#95bee8");
++    INIT_COLOR(config.client[QUBE_BLUE].unfocused,
++        "#3384d6", "#1f5082", "#999999", "#95bee8");
++    INIT_COLOR(config.client[QUBE_BLUE].urgent,
++        "#3384d6", "#95bee8", "#ce0000", "#95bee8");
++
++    config.client[QUBE_PURPLE].background = draw_util_hex_to_color("#121212");
++    INIT_COLOR(config.client[QUBE_PURPLE].focused,
++        "#8f5cbe", "#8f5cbe", "#ffffff", "#c6abdd");
++    INIT_COLOR(config.client[QUBE_PURPLE].focused_inactive,
++        "#8f5cbe", "#5c3e78", "#ffffff", "#c6abdd");
++    INIT_COLOR(config.client[QUBE_PURPLE].unfocused,
++        "#8f5cbe", "#5c3e78", "#999999", "#c6abdd");
++    INIT_COLOR(config.client[QUBE_PURPLE].urgent,
++        "#8f5cbe", "#c6abdd", "#ce0000", "#c6abdd");
++
++    config.client[QUBE_BLACK].background = draw_util_hex_to_color("#121212");
++    INIT_COLOR(config.client[QUBE_BLACK].focused,
++        "#595959", "#595959", "#ffffff", "#a3a3a3");
++    INIT_COLOR(config.client[QUBE_BLACK].focused_inactive,
++        "#595959", "#3a3a3a", "#ffffff", "#a3a3a3");
++    INIT_COLOR(config.client[QUBE_BLACK].unfocused,
++        "#595959", "#3a3a3a", "#999999", "#a3a3a3");
++    INIT_COLOR(config.client[QUBE_BLACK].urgent,
++        "#595959", "#a3a3a3", "#ce0000", "#a3a3a3");
+ 
+     /* border and indicator color are ignored for placeholder contents */
+-    INIT_COLOR(config.client.placeholder, "#000000", "#0c0c0c", "#ffffff", "#000000");
++    INIT_COLOR(config.client[QUBE_DOM0].placeholder,
++        "#000000", "#0c0c0c", "#ffffff", "#000000");
++ 
+ 
+     /* the last argument (indicator color) is ignored for bar colors */
+     INIT_COLOR(config.bar.focused, "#4c7899", "#285577", "#ffffff", "#000000");
+@@ -236,6 +322,12 @@
+ 
+     parse_configuration(override_configpath, true);
+ 
++    /* redefine defaults, to overwrite user settings easily */
++    config.default_border = BS_NORMAL;
++    config.default_floating_border = BS_NORMAL;
++    config.default_border_width = logical_px(2);
++    config.default_floating_border_width = logical_px(2);
++
+     if (reload) {
+         translate_keysyms();
+         grab_all_keys(conn);
+diff -uNr i3-4.12/src/config_directives.c i3-4.12p/src/config_directives.c
+--- i3-4.12/src/config_directives.c	2016-11-26 03:00:35.568619804 -0800
++++ i3-4.12p/src/config_directives.c	2016-11-26 02:01:51.409619804 -0800
+@@ -335,32 +335,63 @@
+ 
+ CFGFUN(color_single, const char *colorclass, const char *color) {
+     /* used for client.background only currently */
+-    config.client.background = draw_util_hex_to_color(color);
++    config.client[QUBE_DOM0].background = draw_util_hex_to_color(color);
+ }
+ 
+-CFGFUN(color, const char *colorclass, const char *border, const char *background, const char *text, const char *indicator, const char *child_border) {
+-#define APPLY_COLORS(classname)                                                              \
+-    do {                                                                                     \
+-        if (strcmp(colorclass, "client." #classname) == 0) {                                 \
+-            config.client.classname.border = draw_util_hex_to_color(border);                 \
+-            config.client.classname.background = draw_util_hex_to_color(background);         \
+-            config.client.classname.text = draw_util_hex_to_color(text);                     \
+-            if (indicator != NULL) {                                                         \
+-                config.client.classname.indicator = draw_util_hex_to_color(indicator);       \
+-            }                                                                                \
+-            if (child_border != NULL) {                                                      \
+-                config.client.classname.child_border = draw_util_hex_to_color(child_border); \
+-            } else {                                                                         \
+-                config.client.classname.child_border = config.client.classname.background;   \
+-            }                                                                                \
+-        }                                                                                    \
++CFGFUN(color, const char *colorclass, const char *qubelabel, const char *border, const char *background, const char *text, const char *indicator, const char *child_border) {
++#define APPLY_COLORS(classname, label)                        \
++    do {                                                      \
++        if (strcmp(colorclass, "client." #classname) == 0) {  \
++            config.client[label].classname.border =           \
++                draw_util_hex_to_color(border);               \
++            config.client[label].classname.background =       \
++                draw_util_hex_to_color(background);           \
++            config.client[label].classname.text =             \
++                draw_util_hex_to_color(text);                 \
++            if (indicator != NULL) {                          \
++                config.client[label].classname.indicator =    \
++                    draw_util_hex_to_color(indicator);        \
++            }                                                 \
++            if (child_border != NULL) {                       \
++                config.client[label].classname.child_border = \
++                    draw_util_hex_to_color(child_border);     \
++            } else {                                          \
++                config.client[label].classname.child_border = \
++                    config.client[label].classname.background;\
++            }                                                 \
++        }                                                     \
+     } while (0)
+ 
+-    APPLY_COLORS(focused_inactive);
+-    APPLY_COLORS(focused);
+-    APPLY_COLORS(unfocused);
+-    APPLY_COLORS(urgent);
+-    APPLY_COLORS(placeholder);
++    int valid_color = 1;
++    qube_label_t label = QUBE_DOM0;
++    if (strcmp(qubelabel, "dom0") == 0) {
++        label = QUBE_DOM0;
++    } else if (strcmp(qubelabel, "red") == 0) {
++        label = QUBE_RED;
++    } else if (strcmp(qubelabel, "orange") == 0) {
++        label = QUBE_ORANGE;
++    } else if (strcmp(qubelabel, "yellow") == 0) {
++        label = QUBE_YELLOW;
++    } else if (strcmp(qubelabel, "green") == 0) {
++        label = QUBE_GREEN;                             
++    } else if (strcmp(qubelabel, "gray") == 0) {
++        label = QUBE_GRAY;
++    } else if (strcmp(qubelabel, "blue") == 0) {
++        label = QUBE_BLUE;
++    } else if (strcmp(qubelabel, "purple") == 0) {
++        label = QUBE_PURPLE;
++    } else if (strcmp(qubelabel, "black") == 0) {
++        label = QUBE_BLACK;
++    } else {
++        valid_color = 0;
++    }
++
++    if (valid_color) {
++        APPLY_COLORS(focused_inactive, label);
++        APPLY_COLORS(focused, label);
++        APPLY_COLORS(unfocused, label);
++        APPLY_COLORS(urgent, label);
++    }   
+ 
+ #undef APPLY_COLORS
+ }
+diff -uNr i3-4.12/src/manage.c i3-4.12p/src/manage.c
+--- i3-4.12/src/manage.c	2016-11-26 03:00:35.568619804 -0800
++++ i3-4.12p/src/manage.c	2016-11-26 01:06:49.886619804 -0800
+@@ -87,7 +87,7 @@
+     xcb_get_window_attributes_reply_t *attr = NULL;
+ 
+     xcb_get_property_cookie_t wm_type_cookie, strut_cookie, state_cookie,
+-        utf8_title_cookie, title_cookie,
++        utf8_title_cookie, title_cookie, qubes_vmname_cookie, qubes_label_cookie,
+         class_cookie, leader_cookie, transient_cookie,
+         role_cookie, startup_id_cookie, wm_hints_cookie,
+         wm_normal_hints_cookie, motif_wm_hints_cookie, wm_user_time_cookie, wm_desktop_cookie;
+@@ -152,6 +152,8 @@
+     strut_cookie = GET_PROPERTY(A__NET_WM_STRUT_PARTIAL, UINT32_MAX);
+     state_cookie = GET_PROPERTY(A__NET_WM_STATE, UINT32_MAX);
+     utf8_title_cookie = GET_PROPERTY(A__NET_WM_NAME, 128);
++    qubes_vmname_cookie = GET_PROPERTY(A__QUBES_VMNAME, 128);
++    qubes_label_cookie = GET_PROPERTY(A__QUBES_LABEL, UINT32_MAX);
+     leader_cookie = GET_PROPERTY(A_WM_CLIENT_LEADER, UINT32_MAX);
+     transient_cookie = GET_PROPERTY(XCB_ATOM_WM_TRANSIENT_FOR, UINT32_MAX);
+     title_cookie = GET_PROPERTY(XCB_ATOM_WM_NAME, 128);
+@@ -176,6 +178,8 @@
+     window_update_class(cwindow, xcb_get_property_reply(conn, class_cookie, NULL), true);
+     window_update_name_legacy(cwindow, xcb_get_property_reply(conn, title_cookie, NULL), true);
+     window_update_name(cwindow, xcb_get_property_reply(conn, utf8_title_cookie, NULL), true);
++    window_update_qubes_vmname(cwindow, xcb_get_property_reply(conn, qubes_vmname_cookie, NULL), true);
++    window_update_qubes_label(cwindow, xcb_get_property_reply(conn, qubes_label_cookie, NULL), true);
+     window_update_leader(cwindow, xcb_get_property_reply(conn, leader_cookie, NULL));
+     window_update_transient_for(cwindow, xcb_get_property_reply(conn, transient_cookie, NULL));
+     window_update_strut_partial(cwindow, xcb_get_property_reply(conn, strut_cookie, NULL));
+diff -uNr i3-4.12/src/resize.c i3-4.12p/src/resize.c
+--- i3-4.12/src/resize.c	2016-11-26 03:00:35.568619804 -0800
++++ i3-4.12p/src/resize.c	2016-11-26 01:50:43.025619804 -0800
+@@ -144,7 +144,7 @@
+     }
+ 
+     mask = XCB_CW_BACK_PIXEL;
+-    values[0] = config.client.focused.border.colorpixel;
++    values[0] = config.client[QUBE_DOM0].focused.border.colorpixel;
+ 
+     mask |= XCB_CW_OVERRIDE_REDIRECT;
+     values[1] = 1;
+diff -uNr i3-4.12/src/restore_layout.c i3-4.12p/src/restore_layout.c
+--- i3-4.12/src/restore_layout.c	2016-11-26 03:00:35.568619804 -0800
++++ i3-4.12p/src/restore_layout.c	2016-11-26 01:52:32.450619804 -0800
+@@ -140,7 +140,7 @@
+ 
+ static void update_placeholder_contents(placeholder_state *state) {
+     xcb_change_gc(restore_conn, state->gc, XCB_GC_FOREGROUND,
+-                  (uint32_t[]){config.client.placeholder.background.colorpixel});
++                  (uint32_t[]){config.client[QUBE_DOM0].placeholder.background.colorpixel});
+     xcb_poly_fill_rectangle(restore_conn, state->pixmap, state->gc, 1,
+                             (xcb_rectangle_t[]){{0, 0, state->rect.width, state->rect.height}});
+ 
+@@ -148,7 +148,8 @@
+     xcb_flush(restore_conn);
+     xcb_aux_sync(restore_conn);
+ 
+-    set_font_colors(state->gc, config.client.placeholder.text, config.client.placeholder.background);
++    set_font_colors(state->gc, config.client[QUBE_DOM0].placeholder.text, 
++                    config.client[QUBE_DOM0].placeholder.background);
+ 
+     Match *swallows;
+     int n = 0;
+@@ -208,7 +209,7 @@
+             true,
+             XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK,
+             (uint32_t[]){
+-                config.client.placeholder.background.colorpixel,
++                config.client[QUBE_DOM0].placeholder.background.colorpixel,
+                 XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_STRUCTURE_NOTIFY,
+             });
+         /* Make i3 not focus this window. */
+diff -uNr i3-4.12/src/window.c i3-4.12p/src/window.c
+--- i3-4.12/src/window.c	2016-11-26 03:00:35.568619804 -0800
++++ i3-4.12p/src/window.c	2016-11-26 01:06:49.887619804 -0800
+@@ -148,6 +148,57 @@
+ }
+ 
+ /*
++ * Updates the qubes vmname by using _QUBES_VMNAME (encoded in UTF-8) for the given
++ * window.
++ *
++ */
++void window_update_qubes_vmname(i3Window *win, xcb_get_property_reply_t *prop, bool before_mgmt) {
++    if (prop == NULL || xcb_get_property_value_length(prop) == 0) {
++        win->qubes_vmname = i3string_from_utf8("dom0");
++        FREE(prop);
++        return;
++    }
++
++    i3string_free(win->qubes_vmname);
++    win->qubes_vmname = i3string_from_utf8_with_length(xcb_get_property_value(prop),
++                                                       xcb_get_property_value_length(prop));
++    LOG("_QUBES_VMNAME set to \"%s\"\n", i3string_as_utf8(win->qubes_vmname));
++
++    if (before_mgmt) {
++        free(prop);
++        return;
++    }
++
++    run_assignments(win);
++
++    free(prop);
++}
++
++/*
++ * Updates the qubes label by using _QUBES_LABEL (encoded in UTF-8) for the given
++ * window.
++ *
++ */
++void window_update_qubes_label(i3Window *win, xcb_get_property_reply_t *prop, bool before_mgmt) {
++    if (prop == NULL || xcb_get_property_value_length(prop) == 0) {
++        win->qubes_label = 0;
++        FREE(prop);
++        return;
++    }
++
++    win->qubes_label = *(int*) xcb_get_property_value(prop);
++
++    if (before_mgmt) {
++        free(prop);
++        return;
++    }
++
++    run_assignments(win);
++
++    free(prop);
++}
++
++/*
+  * Updates the CLIENT_LEADER (logical parent window).
+  *
+  */
+diff -uNr i3-4.12/src/x.c i3-4.12p/src/x.c
+--- i3-4.12/src/x.c	2016-11-26 03:00:35.568619804 -0800
++++ i3-4.12p/src/x.c	2016-11-26 01:45:34.352619804 -0800
+@@ -384,15 +384,25 @@
+     /* 1: build deco_params and compare with cache */
+     struct deco_render_params *p = scalloc(1, sizeof(struct deco_render_params));
+ 
++    /* Find out which Qubes label to use */
++    qube_label_t label = QUBE_DOM0;
++    struct Window *win = con->window;
++    if (win != NULL) {
++        DLOG("con->qubes_label is %d\n", win->qubes_label);
++        if (win->qubes_label >= 0 && win->qubes_label < QUBE_NUM_LABELS) {
++            label = win->qubes_label;
++        }
++    }
++
+     /* find out which colors to use */
+     if (con->urgent)
+-        p->color = &config.client.urgent;
++        p->color = &config.client[label].urgent;
+     else if (con == focused || con_inside_focused(con))
+-        p->color = &config.client.focused;
++        p->color = &config.client[label].focused;
+     else if (con == TAILQ_FIRST(&(parent->focus_head)))
+-        p->color = &config.client.focused_inactive;
++        p->color = &config.client[label].focused_inactive;
+     else
+-        p->color = &config.client.unfocused;
++        p->color = &config.client[label].unfocused;
+ 
+     p->border_style = con_border_style(con);
+ 
+@@ -401,7 +411,7 @@
+     p->con_rect = (struct width_height){r->width, r->height};
+     p->con_window_rect = (struct width_height){w->width, w->height};
+     p->con_deco_rect = con->deco_rect;
+-    p->background = config.client.background;
++    p->background = config.client[QUBE_DOM0].background;
+     p->con_is_leaf = con_is_leaf(con);
+     p->parent_layout = con->parent->layout;
+ 
+@@ -433,16 +443,16 @@
+     /* 2: draw the client.background, but only for the parts around the window_rect */
+     if (con->window != NULL) {
+         /* top area */
+-        draw_util_rectangle(conn, &(con->frame_buffer), config.client.background,
++        draw_util_rectangle(conn, &(con->frame_buffer), config.client[QUBE_DOM0].background,
+                             0, 0, r->width, w->y);
+         /* bottom area */
+-        draw_util_rectangle(conn, &(con->frame_buffer), config.client.background,
++        draw_util_rectangle(conn, &(con->frame_buffer), config.client[QUBE_DOM0].background,
+                             0, w->y + w->height, r->width, r->height - (w->y + w->height));
+         /* left area */
+-        draw_util_rectangle(conn, &(con->frame_buffer), config.client.background,
++        draw_util_rectangle(conn, &(con->frame_buffer), config.client[QUBE_DOM0].background,
+                             0, 0, w->x, r->height);
+         /* right area */
+-        draw_util_rectangle(conn, &(con->frame_buffer), config.client.background,
++        draw_util_rectangle(conn, &(con->frame_buffer), config.client[QUBE_DOM0].background,
+                             w->x + w->width, 0, r->width - (w->x + w->width), r->height);
+     }
+ 
+@@ -527,7 +537,6 @@
+     /* 6: draw the title */
+     int text_offset_y = (con->deco_rect.height - config.font.height) / 2;
+ 
+-    struct Window *win = con->window;
+     if (win == NULL) {
+         i3String *title;
+         if (con->title_format == NULL) {
+@@ -603,13 +612,19 @@
+         FREE(formatted_mark);
+     }
+ 
++    /* set window title, include qubes vmname */
+     i3String *title = con->title_format == NULL ? win->name : con_parse_title_format(con);
++    char *title_buf;
++    sasprintf(&title_buf, "[%s] %s", i3string_as_utf8(win->qubes_vmname), i3string_as_utf8(title));
++    if (con->title_format != NULL)
++        I3STRING_FREE(title);
++    title = i3string_from_utf8(title_buf);
++    FREE(title_buf);
+     draw_util_text(title, &(parent->frame_buffer),
+                    p->color->text, p->color->background,
+                    con->deco_rect.x + logical_px(2) + indent_px, con->deco_rect.y + text_offset_y,
+                    con->deco_rect.width - logical_px(2) - indent_px - mark_width - logical_px(2));
+-    if (con->title_format != NULL)
+-        I3STRING_FREE(title);
++    I3STRING_FREE(title);
+ 
+ after_title:
+     x_draw_decoration_after_title(con, p);

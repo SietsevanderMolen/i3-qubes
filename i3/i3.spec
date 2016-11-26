@@ -11,7 +11,7 @@ License:        BSD
 URL:            http://i3wm.org
 Source0:        http://i3wm.org/downloads/%{name}-%{version}.tar.bz2
 Source1:        %{name}-logo.svg
-Patch0:         0001-Show-qubes-domain-in-non-optional-colored-borders.patch
+Patch0:         0001-Show-qubes-domain-in-configurable-colored-borders.patch
 
 BuildRequires:  asciidoc
 BuildRequires:  bison
