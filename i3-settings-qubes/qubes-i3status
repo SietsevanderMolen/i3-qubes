@@ -55,7 +55,7 @@ status_bat() {
     local bat=$((100*accum_now/accum_full))
 
     local ac=''
-    local color='#00ff00'
+    local color=''
     if [[ $(cat /sys/class/power_supply/AC/online) == '1' ]]; then
         ac=' AC'
     elif ((bat < 25)); then
@@ -81,7 +81,7 @@ status_qubes() {
 
 status_disk() {
     local disk=`df -h / | tail -n 1 | awk '{print $4}'`
-    json disk "Disk: $disk"
+    json disk "Disk free: $disk"
 }
 
 main() {
@@ -92,13 +92,15 @@ main() {
     for ((n=0; ; ++n)); do
         if (( n % 10 == 0 )); then
             local qubes=$(status_qubes)
-            local net=$(status_net)
+            # network status disabled by default as it's dangerous to run a
+            # command on a qube from dom0
+            # local net=$(status_net)
             local disk=$(status_disk)
             local bat=$(status_bat)
             local load=$(status_load)
         fi
         local time=$(status_time)
-        echo ",[$qubes$net$disk$bat$load$time]"
+        echo ",[$qubes$disk$bat$load$time]"
         sleep 1
     done
 }

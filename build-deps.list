@@ -21,3 +21,4 @@ pcre-devel
 perl-Data-Dumper-Names
 gcc
 rpmdevtools
+libxkbcommon-x11-devel
