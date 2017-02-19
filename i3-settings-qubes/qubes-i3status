@@ -45,26 +45,49 @@ status_time() {
 }
 
 status_bat() {
-    local accum_now=0;
-    local accum_full=0;
+    local accum_now_mWh=0 # current battery power in mWh
+    local accum_full_mWh=0 # full battery power in mWh
 
-    for battery in /sys/class/power_supply/BAT*; do
-        accum_now=$((accum_now + $(cat $battery/energy_now)))
-        accum_full=$((accum_full + $(cat $battery/energy_full)))
+    local batteries # batteries connected to the system
+    mapfile -t batteries < <(shopt -s nullglob; for f in /sys/class/power_supply/BAT*; do echo "$f"; done)
+    for battery in "${batteries[@]}"; do
+        if [ -f "${battery}"/energy_now ]; then
+            accum_now_mWh=$((accum_now_mWh + $(cat "${battery}"/energy_now)))
+            accum_full_mWh=$((accum_full_mWh + $(cat "${battery}"/energy_full)))
+        elif [ -f $battery/charge_now ]; then
+            # charge is given in mAh, convert to mWh
+            local voltage=$(cat "${battery}"/voltage_now)
+            local now_mWh=$(((voltage / 1000) *  $(cat "${battery}"/charge_now) / 1000))
+            local full_mWh=$(((voltage / 1000) *  $(cat "${battery}"/charge_full) / 1000))
+
+            accum_now_mWh=$((accum_now_mWh + now_mWh))
+            accum_full_mWh=$((accum_full_mWh + full_mWh))
+        fi
     done
-    local bat=$((100*accum_now/accum_full))
 
-    local ac=''
+    local bat_pct=$((100*accum_now_mWh/accum_full_mWh))
+
+    local ac_present=false
+
+    local adps # power adapters connected to the system
+    mapfile -t adps < <(shopt -s nullglob; for f in /sys/class/power_supply/ADP* \
+                                                    /sys/class/power_supply/AC* ; do echo "$f"; done)
+    for adp in ${adps[@]}; do
+        if [[ $(cat "${adp}"/online) == '1' ]]; then
+            ac_present=true
+        fi
+    done
+
     local color=''
-    if [[ $(cat /sys/class/power_supply/AC/online) == '1' ]]; then
+    if [[ "$ac_present" == true ]]; then
         ac=' AC'
-    elif ((bat < 25)); then
+    elif ((bat_pct < 25)); then
         color='#ff0000'
-    elif ((bat < 50)); then
+    elif ((bat_pct < 50)); then
         color='#ffff00'
     fi
 
-    json bat "Bat: $bat%$ac" "$color"
+    json bat "Bat: $bat_pct%$ac" "$color"
 }
 
 status_load() {
